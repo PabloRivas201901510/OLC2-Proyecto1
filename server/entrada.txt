@@ -1,0 +1,25 @@
+
+println("hola mundo");
+print("Guatemala ");
+print(50);
+print(2.0);
+println(2+3.1+8);
+println("El valor es "+8);
+println(8.1 +" <- es el valor ");
+println("SI "+"Y"+" NO");
+println(48.8/6.1);
+println(48.8*6.1);
+println(2^3);
+println(2.2^4.1);
+println("cadena"^2);
+println("cadena"^3);
+println(5%2);
+println((-2+5)*5);
+println(LOG(10, 100));
+println(log(10, 2));
+println(uppercase("holamundo"));
+println(lowercase("HOLAMUNDO"));
+println(sin(45));
+println(cos(45));
+println(tan(45));
+println(sqrt(16));
