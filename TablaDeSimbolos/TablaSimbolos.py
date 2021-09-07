@@ -1,6 +1,7 @@
+
 from TablaDeSimbolos.Simbolo import Simbolo
 from TablaDeSimbolos.Tipo import Tipo, tipos
-
+from Excepciones.Excepcion import Excepcion
 
 class TablaSimbolos:
     def __init__(self, anterior = None, entorno = None):
@@ -11,26 +12,20 @@ class TablaSimbolos:
 
 
     def setVariable(self, simbolo:Simbolo):
-        tmp:TablaSimbolos = self
-        contador = 0
-        while tmp != None:
-            encontro:Simbolo = tmp.getTable()[contador].simbolo.getIdentificador()
-            if encontro != None:
-                return "La variable con el identificador "+simbolo.getIdentificador()+" ya existe"
-            tmp:TablaSimbolos = tmp.getAnterior()
-            contador += 1
-        self.tabla.insert(simbolo)
-        return "La variable "+simbolo.getIdentificador()+" se creo exitosamente!"
+        if simbolo.id in self.tabla :
+            return Excepcion("Semantico", "Variable " + simbolo.id + " ya existe", simbolo.fila, simbolo.columna)
+        else:
+            self.tabla[simbolo.id] = simbolo
+            return None
 
 
     def getVariable(self, identificador):
-        tmp:TablaSimbolos = self
-        contador = 0
-        while tmp != None:
-            encontro:Simbolo = tmp.getTable().get(identificador)
-            if encontro != None:
-                return encontro
-            tmp:TablaSimbolos = tmp.getAnterior()
+        tablaActual = self
+        while tablaActual != None:
+            if identificador in tablaActual.tabla :
+                return tablaActual.tabla[identificador]           # RETORNA SIMBOLO
+            else:
+                tablaActual = tablaActual.anterior
         return None
 
 

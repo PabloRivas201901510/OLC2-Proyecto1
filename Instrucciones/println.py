@@ -1,3 +1,4 @@
+from Expresiones.Variable import Variable
 from TablaDeSimbolos.Simbolo import Simbolo
 from Excepciones.Excepcion import Excepcion
 from TablaDeSimbolos.TablaSimbolos import TablaSimbolos
@@ -12,14 +13,23 @@ class println(instruccion):
         self.expresion = expresion
 
     def interpretar(self, tree, table):
-        #print("LLEGUE AQUI -> "+str(self.expresion))
-        if table.getVariable(str(self.expresion)):
-            variable = table.getVariable(str(self.expresion))
-            tree.updateConsola("\n"+str(variable.getValor().valor))
-        else:
-            value = self.expresion.interpretar(tree, table)
-            if isinstance( value, Excepcion): return value
-            tree.updateConsola(str(value.valor)+"\n")
+        
+        lista_expresiones = ""
+        for i in self.expresion:
+            if isinstance(i , Variable): i = i.interpretar(tree, table)
+            if isinstance( i, Excepcion): return i
+            if table.getVariable(i):
+                variable = table.getVariable(str(i))
+                lista_expresiones += str(variable.getValor().valor)
+                #tree.updateConsola(str(variable.getValor().valor)+"\n")
+            else:
+                value = i.interpretar(tree, table).interpretar(tree, table)
+                #print(str(value))
+                if isinstance( value, Excepcion): return value
+                lista_expresiones += str(value.valor)
+                #tree.updateConsola(str(value.valor)+"\n")
+                
+        tree.updateConsola(str(lista_expresiones)+"\n")
 
     def getNodo(self):
         nodo = NodoArbol("PRINT")

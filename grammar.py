@@ -2,24 +2,44 @@
 import os
 import re
 import sys
-from Excepciones.Excepcion import Excepcion
-from Expresiones.Primitivo import Primitivo
-from TablaDeSimbolos.Tipo import Tipo, tipos
-from TablaDeSimbolos.TablaSimbolos import TablaSimbolos
-from TablaDeSimbolos.Arbol import Arbol
-from Abstract.instruccion import instruccion
 
-from Instrucciones.println import println
-from Instrucciones.print_ import print_
-from Expresiones.Aritmetica import Aritmetica, tipos_Aritmetica
-from Expresiones.Nativas import Nativas, tipos_nativas
-from Expresiones.Logica import Logica, tipos_logicos
-from Expresiones.Relacional import Relacional, tipos_relacional
-
+errores = []
 sys.setrecursionlimit(3000)
-
-tokens  = (
-    'REVALUAR',
+reservadas = {
+    'Int64'     :'RTINT',
+    'Float64'   :'FLOAT64',
+    'String'    :'STRING',
+    'Bool'      :'BOOL',
+    'Char'      :'CHAR',
+    'print'     : 'RPRINT',
+    'println'   : 'RPRINTLN',
+    'log10'     :'LOGARITMO10',
+    'log'       :'LOGARITMO',
+    'sin'       :'SENO',
+    'cos'       :'COSENO',
+    'tan'       :'TANGENTE',
+    'sqrt'      :'RAIZCUADRADA',
+    'uppercase' :'UPPERCASE',
+    'lowercase' :'LOWERCASE',
+    'true'      :'RTRUE',
+    'false'     :'RFALSE',
+    'parse'     :'RPARSE',
+    'trunc'     :'RTRUNC',
+    'float'     :'RFLOAT',
+    'string'    :'RSTRING',
+    'typeof'    :'RTYPEOF',
+    'if'        :'RIF',
+    'elseif'    :'RELSEIF',
+    'else'      :'RELSE',
+    'end'       :'REND',
+    'while'     :'RWHILE',
+    'break'     :'RBREAK',
+    'continue'  :'RCONTINUE',
+    'return'    :'RRETURN',
+    'for'       :'RFOR',
+    'in'        :'RIN',
+}
+tokens  = [
     'PARIZQ',
     'PARDER',
     'CORIZQ',
@@ -33,20 +53,11 @@ tokens  = (
     'DECIMAL',
     'ENTERO',
     'CADENA',
+    'CARACTER',
     'PTCOMA',
-    'RPRINTLN',
-    'RPRINT',
-    'LOGARITMO10',
-    'LOGARITMO',
+    'DOBLEDOS',
+    'DOSPUNTOS',
     'COMA',
-    'SENO',
-    'COSENO',
-    'TANGENTE',
-    'RAIZCUADRADA',
-    'UPPERCASE',
-    'LOWERCASE',
-    'RTRUE',
-    'RFALSE',
     'OR',
     'AND',
     'NOT',
@@ -54,10 +65,9 @@ tokens  = (
     'MAYOR',
     'MENOR',
     'ID',
-)
+]+ list(reservadas.values())
 
 # Tokens
-t_REVALUAR  = r'Evaluar'
 t_PARIZQ    = r'\('
 t_PARDER    = r'\)'
 t_CORIZQ    = r'\['
@@ -69,19 +79,9 @@ t_DIVIDIDO  = r'/'
 t_ELEVADO = r'\^'
 t_MODULO = r'\%'
 t_PTCOMA    = r';'
-t_RPRINTLN    = r'println'
-t_RPRINT    = r'print'
-t_LOGARITMO10 = r'log10'
-t_LOGARITMO = r'log'
-t_COMA = r'\,'
-t_SENO = r'sin'
-t_COSENO = r'cos'
-t_TANGENTE = r'tan'
-t_RAIZCUADRADA = r'sqrt'
-t_UPPERCASE = r'uppercase'
-t_LOWERCASE = r'lowercase'
-t_RTRUE = r'true'
-t_RFALSE = r'false'
+t_DOBLEDOS = r'::'
+t_DOSPUNTOS = r':'
+t_COMA    = r'\,'
 t_OR = r'\|\|'
 t_AND = r'\&\&'
 t_NOT = r'\!'
@@ -94,7 +94,7 @@ def t_DECIMAL(t):
     try:
         t.value = float(t.value)
     except ValueError:
-        print("Floaat value too large %d", t.value)
+        print("Float value too large %d", t.value)
         t.value = 0
     return t
 
@@ -107,21 +107,39 @@ def t_ENTERO(t):
         t.value = 0
     return t
 
+def t_ID(t):
+     r'[a-zA-Z][a-zA-Z_0-9]*'
+     t.type = reservadas.get(t.value,'ID')
+     return t
+
 def t_CADENA(t):
     r'(\".*?\")'
     t.value = t.value[1:-1] # remuevo las comillas
     return t
 
+def t_CARACTER(t):
+    r'(\'.*?\')'
+    t.value = t.value[1:-1] # remuevo las comillas
+    return t
+
+def t_COMENTARIO_MULTILINEA(t):
+    r'\#=(.|\n)=?=\#'
+    t.lexer.lineno += t.value.count('\n')
+
+# Comentario simple // ...
+def t_COMENTARIO_SIMPLE(t):
+    r'\#.*\n'
+    t.lexer.lineno += 1
+
 # Caracteres ignorados
 t_ignore = " \t"
-
 
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
     
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    errores.append(Excepcion("Lexico","Error léxico: " + t.value[0] , t.lexer.lineno, find_column(input, t)))
     t.lexer.skip(1)
 
 def find_column(inp, token):
@@ -133,13 +151,40 @@ def find_column(inp, token):
 import ply.lex as lex
 lexer = lex.lex()
 
-
 # Asociación de operadores y precedencia
 precedence = (
-    ('left','MAS','MENOS'),
-    ('left','POR','DIVIDIDO'),
-    ('right','UMENOS'),
-    )
+    ('left', 'OR'),
+    ('left', 'AND'),
+    ('left', 'IGUAL', 'MENOR', 'NOT'),
+    ('left', 'MAS', 'MENOS'),
+    ('left', 'POR', 'DIVIDIDO'),
+    ('left', 'ELEVADO', 'MODULO'),
+    ('right', 'UMENOS'),
+)
+
+from Excepciones.Excepcion import Excepcion
+from Expresiones.Primitivo import Primitivo
+from TablaDeSimbolos.Tipo import Tipo, tipos
+from TablaDeSimbolos.TablaSimbolos import TablaSimbolos
+from TablaDeSimbolos.Arbol import Arbol
+from Abstract.instruccion import instruccion
+
+from Instrucciones.println import println
+from Instrucciones.print_ import print_
+from Expresiones.Aritmetica import Aritmetica, tipos_Aritmetica
+from Expresiones.Nativas import Nativas, tipos_nativas
+from Expresiones.Logica import Logica, tipos_logicos
+from Expresiones.Relacional import Relacional, tipos_relacional
+from Instrucciones.Declaracion import Declaracion
+from Expresiones.Variable import Variable
+from Expresiones.FuncionNativa import FuncionNativa, tipos_funcionnativa
+from Instrucciones.Condicional_If import Condicional_If
+from Instrucciones.Condicional import Condicional
+from Instrucciones.While import While
+from Instrucciones.For import For
+from Instrucciones.SentenciaTransferencia import SentenciaTransferencia
+
+
 
 # Definición de la gramática
 def p_init(t) :
@@ -148,26 +193,160 @@ def p_init(t) :
     
 def p_instrucciones_lista(t):
     'instrucciones    : instrucciones instruccion'
-    t[1].append(t[2])
-    t[0] = t[1]
+    if t[2] != None:
+        t[1].append(t[2])
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
 
 def p_instrucciones_lista1(t):
     'instrucciones    : instruccion '
-    t[0] = []
-    t[0].append(t[1])
+    if t[1] != None:
+        t[0] = []
+        t[0].append(t[1])
+    else:
+        t[0] = []
 
-def p_instrucciones_evaluar(t):
-    'instruccion : REVALUAR CORIZQ expresion CORDER PTCOMA'
-    print(str(t[3]))
+
+def p_instrucciones_(t):
+    '''instruccion      : ins_condicional
+                        | ins_println
+                        | ins_print
+                        | ins_while
+                        | ins_sen_transferencia
+                        | ins_asignacion
+                        | asignacion_instr_dos  PTCOMA
+                        | ins_for '''
+    t[0] = t[1]
+
+def p_instruccion_error(t):
+    'instruccion        : error PTCOMA'
+    print(t[1])
+    errores.append(Excepcion("Sintáctico","Error Sintáctico:" + str(t[1].value) , t.lineno(1), find_column(input, t.slice[1])))
+   
 
 def p_instrucciones_IMPRIMIRLN(t):
-    'instruccion : RPRINTLN PARIZQ expresion PARDER PTCOMA'
+    'ins_println : RPRINTLN PARIZQ expresiones PARDER PTCOMA'
     t[0] = println(t[3], t.lineno(1), find_column(input, t.slice[1]))
 
 def p_instrucciones_IMPRIMIR(t):
-    'instruccion : RPRINT PARIZQ expresion PARDER PTCOMA'
+    'ins_print : RPRINT PARIZQ expresiones PARDER PTCOMA'
     t[0] = print_(t[3], t.lineno(1), find_column(input, t.slice[1]))
 
+def p_expresiones_lista(t):
+    'expresiones    : expresiones COMA expresion'
+    if t[2] != None:
+        t[1].append(t[3])
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
+
+def p_expresion_lista1(t):
+    'expresiones   : expresion '
+    if t[1] != None:
+        t[0] = []
+        t[0].append(t[1])
+    else:
+        t[0] = []
+
+#--------------------- DECLARACIONES Y ASIGNACIONES -----------------
+def p_instrucciones_DECLARACION(t):
+    'ins_asignacion : ID IGUAL expresion PTCOMA'
+    t[0] = Declaracion(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+def p_instrucciones_DECLARACION_TIPO(t):
+    '''asignacion_instr_dos : ID IGUAL expresion DOBLEDOS tipodatos '''
+    t[0] = Declaracion(t[5], t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+def p_tipop(t):
+    '''tipodatos        : RTINT
+                        | FLOAT64
+                        | STRING
+                        | CHAR
+                        | BOOL'''
+    if t[1] == "Int64":
+        t[0] = Tipo(tipos.ENTERO)
+    elif t[1] == "Float64":
+        t[0] = Tipo(tipos.DECIMAL)
+    elif t[1] == "String":
+        t[0] = Tipo(tipos.CADENA)
+    elif t[1] == "Char":
+        t[0] = Tipo(tipos.CARACTER)
+    elif t[1] == "Bool":
+        t[0] = Tipo(tipos.BOOLEANO)
+
+
+
+
+
+
+#-------------------------- SENTENCIA CONDICIONALES --------------
+def p_instrucciones_condicional_1(t):
+    '''ins_condicional : sentecias_if sentencia_else  REND PTCOMA'''
+    t[0] = Condicional(t.lineno(1), 1, t[1], t[2])
+
+def p_instrucciones_condicional_2(t):
+    '''ins_condicional : sentecias_if  REND PTCOMA'''
+    t[0] = Condicional(t.lineno(1), 1, t[1], None)
+
+def p_instrucciones_condicional_3(t):
+    '''sentecias_if : sentecias_if  sentecia_elseif'''
+    if t[1] != None:
+        t[1].append(t[2])
+    t[0] = t[1]
+
+def p_instrucciones_condicional_4(t):
+    '''sentecias_if : sentecia_if'''
+    if t[1] == None:
+        t[0] = []
+    else:
+        t[0] = [t[1]]
+      
+
+def p_instrucciones_CONDICIONAL_IF(t):
+    '''sentecia_if : RIF expresion instrucciones'''
+    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3], None, None)
+
+def p_instrucciones_CONDICIONAL_ELSEIF(t):
+    '''sentecia_elseif : RELSEIF  expresion  instrucciones'''
+    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3],  None,  None)
+
+def p_instrucciones_CONDICIONAL_ELSE(t):
+    '''sentencia_else : RELSE instrucciones'''
+    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), None, None, t[2],  None)
+
+#--------------------- WHILE ---------------------------------
+def p_instrucciones_WHILE(t):
+    '''ins_while : RWHILE expresion instrucciones REND PTCOMA'''
+    t[0] = While(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3])
+
+#--------------------- FOR ---------------------------------
+def p_instrucciones_FOR1(t):
+    '''ins_for : RFOR ID RIN expresion DOSPUNTOS expresion instrucciones REND PTCOMA'''
+    t[0] = For(t.lineno(1), find_column(input, t.slice[1]), t[2], t[4], t[6], True, False, False, t[7])
+
+def p_instrucciones_FOR2(t):
+    '''ins_for : RFOR ID RIN expresion instrucciones REND PTCOMA'''
+    t[0] = For(t.lineno(1), find_column(input, t.slice[1]), t[2], t[4], None , False, True, False, t[5])
+
+#---------------- SENTENCIAS DE TRANSFERENCIA ----------------------
+def p_instrucciones_Sentencia_Transferencia(t):
+    '''ins_sen_transferencia :    RCONTINUE PTCOMA
+                                | RBREAK PTCOMA
+                                | RRETURN PTCOMA'''
+    if t[1] == "continue":
+        t[0] = SentenciaTransferencia(Tipo(tipos.CONTINUE),t.lineno(1), find_column(input, t.slice[1]), None)
+    elif t[1] == "break":
+        t[0] = SentenciaTransferencia(Tipo(tipos.BREAK),t.lineno(1), find_column(input, t.slice[1]), None)
+    elif t[1] == "return":
+        t[0] = SentenciaTransferencia(Tipo(tipos.RETURN),t.lineno(1), find_column(input, t.slice[1]), None)
+        
+
+def p_instrucciones_Sentencia_Transferencia2(t):
+    '''ins_sen_transferencia :  RRETURN expresion PTCOMA'''
+    t[0] = SentenciaTransferencia(Tipo(tipos.RETURN), t.lineno(1), find_column(input, t.slice[1]), t[2])
+
+#---------------------- EXPRESIONES ARITMETICAS --------------------
 def p_expresion_aritmetica(t):
     '''expresion : expresion MAS expresion
                   | expresion MENOS expresion
@@ -188,6 +367,7 @@ def p_expresion_aritmetica(t):
     elif t[2] == '%':
         t[0] = Aritmetica(t.lineno(1), find_column(input, t.slice[2]), t[1], t[3], tipos_Aritmetica.MODULO)
 
+#------------- EXPRESIONES LOGICAS -------------------
 def p_expresion_logica(t):
     '''expresion : expresion OR expresion
                   | expresion AND expresion
@@ -199,6 +379,7 @@ def p_expresion_logica(t):
     if t[1] == '!':
         t[0] = Logica(t.lineno(1), find_column(input, t.slice[1]), t[2], None, tipos_logicos.NOT)
 
+#---------------EXPRESIONES RELACIONALES ----------------------
 def p_expresion_relacional(t):
     '''expresion : expresion MENOR IGUAL expresion
                   | expresion MAYOR IGUAL expresion
@@ -221,7 +402,7 @@ def p_expresion_relacional(t):
         t[0] = Relacional(t.lineno(1), find_column(input, t.slice[2]), t[1], t[3], tipos_relacional.MAYORQUE)
 
 def p_expresion_nativas_logaritmo(t):
-    'expresion   : LOGARITMO PARIZQ expresion COMA expresion PARDER'
+    '''expresion   : LOGARITMO PARIZQ expresion COMA expresion PARDER'''
     t[0] = Nativas(t.lineno(1), find_column(input, t.slice[1]), t[5], t[3], tipos_nativas.LOGARITMO)
 
 def p_expresion_nativas_logaritmo10(t):
@@ -252,6 +433,23 @@ def p_expresion_nativas_lowercase(t):
     ''' expresion   : LOWERCASE PARIZQ expresion PARDER'''
     t[0] = Nativas(t.lineno(1), find_column(input, t.slice[1]), t[3], None, tipos_nativas.LOWERCASE)
 
+def p_expresion_FUNCION_NATIVA(t):
+    ''' expresion   : RPARSE PARIZQ ID COMA expresion PARDER
+                    | RTRUNC PARIZQ ID COMA expresion PARDER
+                    | RFLOAT PARIZQ expresion PARDER
+                    | RSTRING PARIZQ expresion PARDER
+                    | RTYPEOF PARIZQ expresion PARDER'''
+    if t[1] == "parse":
+        t[0] = FuncionNativa(t.lineno(1), find_column(input, t.slice[1]), t[3], t[5], tipos_funcionnativa.PARSE)
+    elif t[1] == "trunc":
+        t[0] = FuncionNativa(t.lineno(1), find_column(input, t.slice[1]), t[3], t[5], tipos_funcionnativa.TRUNC)
+    elif t[1] == "float":
+        t[0] = FuncionNativa(t.lineno(1), find_column(input, t.slice[1]), None, t[3], tipos_funcionnativa.FLOAT)
+    elif t[1] == "string":
+        t[0] = FuncionNativa(t.lineno(1), find_column(input, t.slice[1]), None, t[3], tipos_funcionnativa.STRING)
+    elif t[1] == "typeof":
+        t[0] = FuncionNativa(t.lineno(1), find_column(input, t.slice[1]), None, t[3], tipos_funcionnativa.TYPEOF)
+
 def p_expresion_unaria(t):
     'expresion : MENOS expresion %prec UMENOS'
     t[0] = Aritmetica(t.lineno(1), find_column(input, t.slice[1]), t[2], None, tipos_Aritmetica.MENOSUNARIO)
@@ -280,8 +478,16 @@ def p_expresion_false(t):
     'expresion    : RFALSE'
     t[0] = Primitivo(Tipo(tipos.BOOLEANO), t.lineno(1), find_column(input, t.slice[1]), False )
 
-def p_error(t):
-    print("Error sintáctico en '%s'" % t.value)
+def p_expresion_caracter(t):
+    'expresion    : CARACTER'
+    t[0] = Primitivo(Tipo(tipos.CARACTER), t.lineno(1), find_column(input, t.slice[1]), t[1] )
+
+def p_expresion_ID(t):
+    'expresion    : ID'
+    t[0] = Variable(t.lineno(1), find_column(input, t.slice[1]), t[1])
+
+
+
 
 import ply.yacc as yacc
 parser = yacc.yacc()
@@ -291,25 +497,40 @@ parser = yacc.yacc()
 input = f.read()
 print(input)
 parser.parse(input)
-
-global input
-input = inp'''
-
-def parse(inp):
-    global input
-    input = inp
-    
-    ast = Arbol(parser.parse(input))
-    tabla = TablaSimbolos()
-    ast.setTablaSimbolos(tabla)
-    ast.setGlobal(tabla)
-    print(str(ast.getInstrucciones()))
-
+ast = Arbol(parser.parse(input))
+tabla = TablaSimbolos()
+ast.setTablaSimbolos(tabla)
+ast.setGlobal(tabla)
+print(str(ast.getInstrucciones()))
+if ast.getInstrucciones()[0][0] != None:
     for i in ast.getInstrucciones()[0]:
-        #print(str(i))
+        print(str(i))
         i.interpretar(ast, tabla)
 
 
     print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
 
+'''
+
+
+def parse(inp):
+    global errores
+    global lexer
+    global parser
+    global input
+    input = inp
+    ast = Arbol(parser.parse(input))
+    tabla = TablaSimbolos()
+    ast.setTablaSimbolos(tabla)
+    ast.setGlobal(tabla)
+    print("----contador--")
+    print(str(ast.getInstrucciones()))
+    if ast.getInstrucciones()[0] != None:
+        for i in ast.getInstrucciones():
+            #print(str(i))
+            i.interpretar(ast, tabla)
+
+        print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
+
     return ast
+

@@ -13,7 +13,7 @@ class Variable(instruccion):
         self.identificador = identificador
 
     def interpretar(self, tree, table):
-        variable = table.getVariable(self.identificador.lower())
+        variable = table.getVariable(self.identificador)
         if variable:
             self.tipo = variable.getTipo()
             return variable.getValor()

@@ -6,7 +6,7 @@ from Abstract.instruccion import instruccion
 
 class Arbol:
     def __init__(self, instrucciones):
-        self.instrucciones = [instrucciones]
+        self.instrucciones = instrucciones
         self.consola = ""
         self.Global = TablaSimbolos()
         self.errores:Excepcion = []
