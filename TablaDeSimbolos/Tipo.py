@@ -30,3 +30,4 @@ class tipos(Enum):
     VECTOR = 11
     NINGUNA = 12
     NONE = 13
+    ARREGLO = 14

@@ -1,3 +1,4 @@
+from Instrucciones.SentenciaTransferencia import SentenciaTransferencia
 from TablaDeSimbolos.Simbolo import Simbolo
 from Excepciones.Excepcion import Excepcion
 from TablaDeSimbolos.TablaSimbolos import TablaSimbolos
@@ -37,16 +38,14 @@ class Condicional(instruccion):
                             tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                             return result
 
-                        if result != None:
-                            if result.getTipo().getTipos() == tipos.BREAK: return result
-                            elif result.getTipo().getTipos() == tipos.CONTINUE: return result
-                            elif result.getTipo().getTipos() == tipos.RETURN: return result
+                        if isinstance(result, SentenciaTransferencia):
+                            #print('TRANSFERENCIA -> ', result)
+                            if result != None:
+                                return result
                     return
         else:
             #--------------- IF ----------------------
-            print("LLEGUE AL IF")
             for i in self.sentenciaIf:
-                print(i)
                 if isinstance(i, Excepcion): 
                     tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("Semantico", "Error en la sentencia IF", self.linea, self.columna)
@@ -69,10 +68,9 @@ class Condicional(instruccion):
                             tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                             return result
 
-                        if result != None:
-                            if result.getTipo().getTipos() == tipos.BREAK: return result
-                            elif result.getTipo().getTipos() == tipos.CONTINUE: return result
-                            elif result.getTipo().getTipos() == tipos.RETURN: return result
+                        if isinstance(result, SentenciaTransferencia):
+                            if result != None:
+                                return result
                     return
             
             #_------------------ ELSE -----------------
@@ -92,10 +90,11 @@ class Condicional(instruccion):
                     tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return result
 
-                if result != None:
-                    if result.getTipo().getTipos() == tipos.BREAK: return result
-                    elif result.getTipo().getTipos() == tipos.CONTINUE: return result
-                    elif result.getTipo().getTipos() == tipos.RETURN: return result
+                if isinstance(result, SentenciaTransferencia):
+                    if result != None:
+                        if result.getTipo().getTipos() == tipos.BREAK: return result
+                        elif result.getTipo().getTipos() == tipos.CONTINUE: return result
+                        elif result.getTipo().getTipos() == tipos.RETURN: return result
 
     
 

@@ -29,6 +29,7 @@ class Aritmetica(instruccion):
 
             derecho = self.derecha.interpretar(tree, table)
             if isinstance(derecho, Excepcion): return derecho
+            print(izquierdo, " , ", derecho)
         else:
             unario = self.opU.interpretar(tree, table)
             if isinstance(unario, Excepcion): return unario
@@ -61,7 +62,8 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.CADENA)
                     return Primitivo(self.tipo, self.fila, self.columna, str(izquierdo.valor) + str(derecho.valor))
                 else:
-                    return Excepcion("sintactico", "Operandos invalidos +", self.fila, self.columna)
+                    tree.updateConsola("Error: Semantico, Operandos invalidos SUMA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                    return Excepcion("sintactico", "Operandos invalidos SUMA", self.fila, self.columna)
             #-------------DECIMAL-------------
             elif izquierdo.tipo.getTipos() == tipos.DECIMAL:
                 #----------ENTERO OR DECIMAL----------
@@ -73,6 +75,7 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.CADENA)
                     return Primitivo(self.tipo, self.fila, self.columna, str(izquierdo.valor) + str(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos SUMA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos +", self.fila, self.columna)
             # -------------CARACTER-------------
             elif izquierdo.tipo.getTipos() == tipos.CADENA:
@@ -81,8 +84,10 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.CADENA)
                     return Primitivo(self.tipo, self.fila, self.columna, str(izquierdo.valor) + str(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos SUMA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos +", self.fila, self.columna)
             else:
+                tree.updateConsola("Error: Semantico, Operandos invalidos SUMA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Operandos invalidos +", self.fila, self.columna)
 
         # ---------------RESTA---------------
@@ -98,6 +103,7 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) - float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos RESTA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos -", self.fila, self.columna)
             # ----------- DECIMAL -------------
             elif izquierdo.tipo.getTipos() == tipos.DECIMAL:
@@ -106,8 +112,10 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) - float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos RESTA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos -", self.fila, self.columna)
             else:
+                tree.updateConsola("Error: Semantico, Operandos invalidos RESTA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Operandos invalidos -", self.fila, self.columna)
 
         # ---------------MULTIPLICACION---------------
@@ -123,6 +131,7 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) * float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos MULTIPLICACION:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos *", self.fila, self.columna)
             # ----------- DECIMAL -------------
             elif izquierdo.tipo.getTipos() == tipos.DECIMAL:
@@ -131,8 +140,19 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) * float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos MULTIPLICACION:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                    return Excepcion("sintactico", "Operandos invalidos *", self.fila, self.columna)
+            #--------------CADENA-------------
+            elif izquierdo.tipo.getTipos() == tipos.CADENA:
+                # -----------CADENA -------------
+                if derecho.tipo.getTipos() == tipos.CADENA:
+                    self.tipo = Tipo(tipos.CADENA)
+                    return Primitivo(self.tipo, self.fila, self.columna, str(izquierdo.valor) + str(derecho.valor))
+                else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos MULTIPLICACION:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos *", self.fila, self.columna)
             else:
+                tree.updateConsola("Error: Semantico, Operandos invalidos MULTIPLICACION:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Operandos invalidos *", self.fila, self.columna)
 
         # ---------------DIVISION---------------
@@ -143,8 +163,10 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) / float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos DIVISION:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos /", self.fila, self.columna)
             else:
+                tree.updateConsola("Error: Semantico, Operandos invalidos DIVISION:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Operandos invalidos /", self.fila, self.columna)
 
         # ---------------POTENCIA---------------
@@ -160,6 +182,7 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) ** float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos POTENCIA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos ^", self.fila, self.columna)
             # ---------------DECIMAL---------------
             elif izquierdo.tipo.getTipos() == tipos.DECIMAL:
@@ -168,20 +191,23 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) ** float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos POTENCIA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos ^", self.fila, self.columna)
             # ---------------CADENA---------------
             elif izquierdo.tipo.getTipos() == tipos.CADENA:
                 if derecho.tipo.getTipos() == tipos.ENTERO:
                     self.tipo = Tipo(tipos.CADENA)
-                    contador = 0;
+                    contador = 0
                     cadena = ""
                     while contador < int(derecho.valor):
                         cadena += izquierdo.valor
                         contador += 1
                     return Primitivo(self.tipo, self.fila, self.columna, cadena)
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos POTENCIA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos ^", self.fila, self.columna)
             else:
+                tree.updateConsola("Error: Semantico, Operandos invalidos POTENCIA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Operandos invalidos ^", self.fila, self.columna)
 
         # ---------------MODULO---------------
@@ -198,6 +224,7 @@ class Aritmetica(instruccion):
                     return Primitivo(self.tipo, self.fila, self.columna,
                                      float(izquierdo.valor) ** float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos MODULO:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos %", self.fila, self.columna)
             # ---------------DECIMAL---------------
             elif izquierdo.tipo.getTipos() == tipos.DECIMAL:
@@ -206,10 +233,13 @@ class Aritmetica(instruccion):
                     self.tipo = Tipo(tipos.DECIMAL)
                     return Primitivo(self.tipo, self.fila, self.columna, float(izquierdo.valor) % float(derecho.valor))
                 else:
+                    tree.updateConsola("Error: Semantico, Operandos invalidos MODULO:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("sintactico", "Operandos invalidos %", self.fila, self.columna)
             else:
+                tree.updateConsola("Error: Semantico, Operandos invalidos MODULO:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Operandos invalidos %", self.fila, self.columna)
         else:
+            tree.updateConsola("Error: Semantico, Problema en ARITMETICA:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
             return Excepcion("sintactico", "Operandos invalidos +-*/^%", self.fila, self.columna)
 
 

@@ -21,10 +21,10 @@ class FuncionNativa(instruccion):
         
         #------------- FUNCION PARSE --------------
         if self.operador == tipos_funcionnativa.PARSE:
-            if self.type == "Int64":
+            if self.type.getTipos() == tipos.ENTERO:
                 self.tipo = Tipo(tipos.ENTERO)
                 return Primitivo(self.tipo, self.fila, self.columna, int(expresion.valor))
-            elif self.type == "Float64":
+            elif self.type.getTipos() == tipos.DECIMAL:
                 self.tipo = Tipo(tipos.DECIMAL)
                 return Primitivo(self.tipo, self.fila, self.columna, float(expresion.valor))
             else:
@@ -32,7 +32,7 @@ class FuncionNativa(instruccion):
                 return Excepcion("sintactico", "Error en el parse", self.fila, self.columna)
         #------------- FUNCION TRUNC ------------
         elif self.operador == tipos_funcionnativa.TRUNC:
-            if self.type == "Int64":
+            if self.type.getTipos() == tipos.ENTERO:
                 self.tipo = Tipo(tipos.ENTERO)
                 return Primitivo(self.tipo, self.fila, self.columna, int(expresion.valor))
             else:

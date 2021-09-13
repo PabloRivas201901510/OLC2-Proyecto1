@@ -41,10 +41,10 @@ class Relacional(instruccion):
             return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, izquierdo.valor == derecho.valor)
         #---------DIFERENTE -------
         elif self.operador == tipos_relacional.DIFERENCIACION:
-            print(izquierdo.valor != derecho.valor)
             return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, izquierdo.valor != derecho.valor)
         else:
-                return Excepcion("sintactico", "Operandos invalidos para RELACIONALES", self.fila, self.columna) 
+            tree.updateConsola("Error: Semantico, Operandos invalidos para RELACIONALES:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+            return Excepcion("sintactico", "Operandos invalidos para RELACIONALES", self.fila, self.columna) 
 
 
 

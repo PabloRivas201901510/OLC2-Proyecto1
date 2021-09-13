@@ -40,7 +40,8 @@ class Logica(instruccion):
             print(not izquierdo.valor)
             return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, (not izquierdo.valor))   
         else:
-                return Excepcion("sintactico", "Operandos invalidos para LOGICOS", self.fila, self.columna) 
+            tree.updateConsola("Error: Semantico, Operandos invalidos para RELACIONALES:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+            return Excepcion("sintactico", "Operandos invalidos para LOGICOS", self.fila, self.columna) 
 
         
     def getNodo(self):

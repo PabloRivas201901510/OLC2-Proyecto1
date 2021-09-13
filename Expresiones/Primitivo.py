@@ -11,6 +11,13 @@ class Primitivo(instruccion):
         self.valor = valor
 
     def interpretar(self, tree, table):
+        #print(self.getTipo().getTipos())
+        '''if self.getTipo().getTipos() == tipos.ARREGLO:
+            tmp = []
+            for i in self.valor:
+                if isinstance(i, Primitivo): i = i.interpretar(tree, table).valor
+                tmp.append(i)
+            self.valor = tmp'''
         return self
 
     def getNodo(self):

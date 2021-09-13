@@ -13,39 +13,43 @@ class Declaracion(instruccion):
         self.expresion = expresion
 
     def interpretar(self, tree, table):
+        
         expresion = self.expresion.interpretar(tree, table)
         if isinstance(expresion, Excepcion): return expresion
+        #print('EXPRESION -> ', expresion.valor)
+
 
         #CUANDO SE INGRESA UNA VARIABLE PARA ASIGNAR A OTRA SE BUSCA
         tablaActual = table
         while tablaActual != None:
             if self.identificador in tablaActual.tabla :
                 variable = tablaActual.tabla[self.identificador]
-                #print("Declaracion -> "+str(variable.getIdentificador()))   
-                #print(self.expresion)
+                variable.setValor(expresion)
+                return
                 if variable.getTipo().getTipos() == tipos.NINGUNA:
                     variable.setValor(expresion)
                 else:
                     if expresion.tipo.getTipos() == variable.getTipo().getTipos():
                         #print("variable ya ")
                         variable.setValor(expresion)
+                        return
                     else:
-                        tree.updateConsola("\n"+"Error: Semantico, fila:"+str(self.fila)+", columna:"+str(self.columna))
+                        tree.updateConsola("\n"+"Error: Semantico, Los tipos de las variables no son iguales.  fila:"+str(self.fila)+", columna:"+str(self.columna)+"\n")
                         return Excepcion("Semantico", "Los tipos de las variables no son iguales", self.fila, self.columna)
-                #print(str(variable.getTipo().getTipos()))  
-                #print(str(variable.getValor()))
+                
                 return  
             else:
                 tablaActual = tablaActual.anterior
         
         # SI NO EXISTE LA VARIABLE SE CREA
         if self.tipo.getTipos() == tipos.NINGUNA:
-            table.setVariable(Simbolo(self.tipo, self.identificador, self.fila, self.columna, self.expresion))
+            table.setVariable(Simbolo(self.tipo, self.identificador, self.fila, self.columna, expresion))
         else:
             if expresion.tipo.getTipos() == self.tipo.getTipos():
-                table.setVariable(Simbolo(self.tipo, self.identificador, self.fila, self.columna, self.expresion))
+                #print('CON TIPO -> ',self.tipo.getTipos())
+                table.setVariable(Simbolo(Tipo(expresion.tipo.getTipos()), self.identificador, self.fila, self.columna, expresion))
             else:
-                tree.updateConsola("\n"+"Error: Semantico, fila:"+str(self.fila)+", columna:"+str(self.columna))
+                tree.updateConsola("\n"+"Error: Semantico, Los tipos de las variables no son iguales fila:"+str(self.fila)+", columna:"+str(self.columna)+"\n")
                 return Excepcion("Semantico", "Los tipos de las variables no son iguales", self.fila, self.columna)
         return None
         
