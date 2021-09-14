@@ -25,9 +25,9 @@ class tipos(Enum):
     BREAK = 6
     CONTINUE = 7
     RETURN = 8
-    VOID = 9
+    STRUCT = 9
     LISTA = 10
-    VECTOR = 11
+    FUNCION = 11
     NINGUNA = 12
     NONE = 13
     ARREGLO = 14

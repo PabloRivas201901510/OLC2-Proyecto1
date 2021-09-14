@@ -26,12 +26,14 @@ class println(instruccion):
                 lista_expresiones += str(variable.getValor().valor)
                 #tree.updateConsola(str(variable.getValor().valor)+"\n")
             else:
-                value = None
+                print('1VALOR IMPRIMIR -> ', i)
                 value = i.interpretar(tree, table)
                 if isinstance( value, Excepcion): return value
+                print('2VALOR IMPRIMIR -> ', value)
                 if value.tipo.getTipos() == tipos.ARREGLO:
                     value = self.Desgloce_Arreglos(value.valor, tree, table)
                 else:
+                    print('3VALOR IMPRIMIR -> ', value.tipo.getTipos())
                     value = value.valor
                 lista_expresiones += str(value)
                 
@@ -50,6 +52,7 @@ class println(instruccion):
     def Desgloce_Arreglos(self, vector, tree, table):
         #import pdb
         #pdb.set_trace()
+        print('LLEGA-> ', vector )
         res = "["
         for i in vector:
             if(i == "[" or i == "]"):

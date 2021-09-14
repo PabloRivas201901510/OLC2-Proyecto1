@@ -48,15 +48,27 @@ class DeclararArreglos(instruccion):
                 for i in self.posiciones:
                     posicion = i.interpretar(tree, table)
                     if isinstance(posicion, Excepcion): 
-                        tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                        return Excepcion("Semantico", "Error en el ciclo FOR", self.linea, self.columna)
-                    pos.append(posicion.valor - 1)
+                        tree.updateConsola("Error: Semantico, Error en las posiciones1,  Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                        return Excepcion("Semantico", "Error en las posiciones", self.fila, self.columna)
+                    print('POSICION DE ENTRADA -> ', posicion.valor)
+                    if int(posicion.valor) < 1:
+                        tree.updateConsola("Error: Semantico, Error en las posiciones2,  Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                        return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, False)
+                        
+                    pos.append(posicion.valor-1)
                 pos.reverse()  
                 tmp1 = []
                 for j in pos:
                     tmp1.append(j)
+
+                if self.tipo_declaracion == Tipo_Declaracion_Arreglo.ACCEDER:
+                    print('ACCEDI BIEN AQUI---------------------')
+                    valor = self.Accesso_Arreglos(tmp1, valor_variable, valor_expresion, tree, table)
+                    valor = self.valor_retorno.interpretar(tree, table)
+                    print('TIENE QUE SER PRIMIRIVO -> ', valor)
+                    return valor
                     
-                valor = self.find_element(tmp1, valor_variable, valor_expresion, tree, table)
+                valor = self.find_element(tmp1, valor_variable, valor_expresion, tree, table, 0)
                 if isinstance(valor, Excepcion):return valor
 
                 if self.tipo_declaracion == Tipo_Declaracion_Arreglo.POP:
@@ -65,11 +77,7 @@ class DeclararArreglos(instruccion):
                     return valor
                 elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.LENGTH:
                     return Primitivo(Tipo(tipos.ENTERO), self.fila, self.columna, self.valor_retorno)  
-                elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.ACCEDER:
-                    valor = self.valor_retorno.interpretar(tree, table)
-                    self.tipo = valor.tipo
-                    return valor
-
+               
                 return
             elif self.declaracion == Declaracion_Arreglo.SIMPLE:
                 
@@ -85,14 +93,15 @@ class DeclararArreglos(instruccion):
 
 
  
-    def find_element(self, posiciones, lista, expresion, tree, table):
+    def find_element(self, posiciones, lista, expresion, tree, table, valor_acc):
         #COMPROBAMOS SI LA POSICION NO SOBREPASA LA LISTA
         
         try:
             #CUANDO LA LISTA YA NO TENGA POSICIONES RETORNA
             if self.tipo_declaracion == Tipo_Declaracion_Arreglo.DECLARACION:
                 if len(posiciones) == 0:
-                    return [self.expresion, 1]
+                    valor_w = self.expresion.interpretar(tree, table)
+                    return [valor_w, 1]
             elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.PUSH:
                 if len(posiciones) == 0:
                     lista.append(self.expresion)
@@ -111,14 +120,17 @@ class DeclararArreglos(instruccion):
 
 
         #OBTENEMOS LA POSICION
+        #print(self.tipo_declaracion, ' POSICION_A -> ', posiciones)
         posicion = posiciones.pop()
 
         #COMPROBAMOS SI LA POSICION NO SOBREPASA LA LISTA
         try:
+            
             if posicion >= len(lista):
                 tree.updateConsola("Error: Semantico, La posicion ingresada no existe2, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("Semantico", "La posicion ingresada no existe", self.fila, self.columna)
         except:
+            #print('ERROR2')
             tree.updateConsola("Error: Semantico, La posicion ingresada no existe3, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
             return Excepcion("Semantico", "La posicion ingresada no existe", self.fila, self.columna)
 
@@ -126,14 +138,9 @@ class DeclararArreglos(instruccion):
         for index, value in enumerate(lista):
             if isinstance(value, Primitivo): 
                 valor_acceso = value.interpretar(tree, table)
-                value = value.interpretar(tree, table).valor
             if index == posicion:
-                if self.tipo_declaracion == Tipo_Declaracion_Arreglo.ACCEDER:
-                    if len(posiciones) == 0:
-                        #print('ACCEDER FOR ->>> ', valor_acceso)
-                        self.valor_retorno = valor_acceso
-                        return [lista, 0]
-                valor = self.find_element( posiciones, value, expresion, tree, table)
+                valor_acceso = value.interpretar(tree, table)
+                valor = self.find_element( posiciones, valor_acceso.valor , expresion, tree, table, valor_acceso)
                 if isinstance(valor, Excepcion):return valor
                 if valor[1]:
                     lista.pop(index)
@@ -141,7 +148,33 @@ class DeclararArreglos(instruccion):
                
                 return [lista, 0]
             
+    def Accesso_Arreglos(self, posiciones, lista, expresion, tree, table):
+        copia = posiciones.copy()
+        valor_copia = copia.pop()
+        #RECORREMOS LA LISTA Y COMPARAMOS
+        for index, value in enumerate(lista):
+            
+            print(index, " == ", valor_copia)
+            if index == valor_copia:
+                valor_acceso = value.interpretar(tree, table)
+                #print('E -> ', posiciones)
+                posicion = posiciones.pop()
+                #print('s -> ', posiciones)
+                #COMPROBAMOS SI LA POSICION NO SOBREPASA LA LISTA
 
+                if self.tipo_declaracion == Tipo_Declaracion_Arreglo.ACCEDER:
+                    if len(posiciones) == 0:
+                        #print('VALOR ACCESO -> ', str(valor_acceso))
+                        self.valor_retorno = valor_acceso
+                        return [lista, 0]
+
+                valor = self.Accesso_Arreglos( posiciones, valor_acceso.valor , expresion, tree, table)
+                if isinstance(valor, Excepcion):return valor
+                if valor[1]:
+                    lista.pop(index)
+                    lista.insert(index, valor[0])
+               
+                return [lista, 0]
 
     def getNodo(self):
         pass

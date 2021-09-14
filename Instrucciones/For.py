@@ -80,16 +80,19 @@ class For(instruccion):
                     tabla.setEntorno("Loop For")
                     tree.setTablaSimbolos(tabla)
                     tabla.setVariable(Simbolo(Tipo(tipos.NINGUNA), self.interador, self.fila, self.columna, Primitivo(Tipo(tipos.ENTERO), self.fila, self.columna, 0)))
-                    #Declaracion(Tipo(tipos.NINGUNA), self.fila, self.columna, self.interador, Primitivo(Tipo(tipos.ENTERO), self.fila, self.columna, 0))
-                    #print('FOR ==> ', cadena.tipo.getTipos(), ' ----> ', len(valor_for))
-                    #self.tipo = cadena.tipo.getTipos()
+
                     contador = 0
                     while contador < len(valor_for): #ES UN CARACTER?
                         if isinstance(valor_for[contador], Primitivo):
                             it = Declaracion(Tipo(tipos.NINGUNA), self.fila, self.columna, self.interador, Primitivo(Tipo(valor_for[contador].tipo.getTipos()), self.fila, self.columna, valor_for[contador].valor ))
                             it.interpretar(tree, tabla)
                         else:
-                            it = Declaracion(Tipo(tipos.NINGUNA), self.fila, self.columna, self.interador, Primitivo(Tipo(tipos.ARREGLO), self.fila, self.columna, valor_for[contador] ))
+                            try:
+                                valor_for[contador] = valor_for[contador].interpretar(tree, tabla)
+                            except:
+                                pass
+                            #print('ESTOY METIENDO EN EL FOR ESTO -> ', valor_for[contador])
+                            it = Declaracion(Tipo(tipos.NINGUNA), self.fila, self.columna, self.interador, valor_for[contador] )
                             it.interpretar(tree, tabla)
                         
                             

@@ -47,7 +47,7 @@ class Nativas(instruccion):
         elif (self.nativa == tipos_nativas.LOGARITMO10):
             if izquierdo.tipo.getTipos() == tipos.ENTERO or izquierdo.tipo.getTipos() == tipos.DECIMAL:
                 self.tipo = Tipo(tipos.DECIMAL)
-                return Primitivo(self.tipo, self.fila, self.columna, math.log(izquierdo.valor, 10))
+                return Primitivo(self.tipo, self.fila, self.columna, math.log10(izquierdo.valor))
             else:
                 tree.updateConsola("Error: Error en nativas con LOGARITMO BASE10 Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                 return Excepcion("sintactico", "Error en nativas con LOGARITMO BASE10", self.fila, self.columna)

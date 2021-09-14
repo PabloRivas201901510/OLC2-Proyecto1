@@ -8,7 +8,11 @@ class SentenciaTransferencia(instruccion):
         self.instrucciones = instrucciones
 
     def interpretar(self, tree, table):
-        return self
+        if self.instrucciones != None:
+            return self.instrucciones
+        else:
+            return self
+
 
     def getNodo(self):
         return NodoArbol("Sentencia de \n Transferencia")

@@ -14,12 +14,13 @@ class While(instruccion):
 
     def interpretar(self, tree, table):
         condicion = self.condicion.interpretar(tree, table)
+        if isinstance(condicion, Excepcion): return condicion
         if self.condicion.tipo.getTipos() != tipos.BOOLEANO:
             tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
             return Excepcion("Semantico", "Se esperaba un valor booleano para la condicion", self.fila, self.columna)
 
         tabla = TablaSimbolos(table)
-        tabla.setEntorno("Sentencia Else")
+        tabla.setEntorno("WHILE")
         tree.setTablaSimbolos(tabla)
         while condicion.valor:
 
@@ -31,7 +32,10 @@ class While(instruccion):
                 if isinstance(result, Excepcion): 
                     tree.updateConsola("Error: Semantico, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("Semantico", "Error en el ciclo WHILE", self.fila, self.columna)
-                elif isinstance(result, SentenciaTransferencia): return result
+                elif isinstance(result, SentenciaTransferencia):
+                    if result.tipo.getTipos() == tipos.BREAK: return
+                    elif result.tipo.getTipos() == tipos.CONTINUE: break
+                    elif result.tipo.getTipos() == tipos.RETURN:  return result
 
             condicion = self.condicion.interpretar(tree, table)
 

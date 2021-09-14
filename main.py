@@ -19,7 +19,7 @@ def analyze():
     else:
         f = open("./entrada.txt", "r")
         entrada = f.read()
-        return render_template('analyze.html', initial=entrada)
+        return render_template('analyze.html', initial="")
 
 @app.route('/output')
 def output():

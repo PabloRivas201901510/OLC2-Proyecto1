@@ -41,6 +41,10 @@ reservadas = {
     'push'      :'RPUSH',
     'pop'       :'RPOP',
     'length'    :'RLENGTH',
+    'function'  :'RFUNCTION',
+    'struct'    :'RSTRUCT',
+    'mutable'   :'RMUTABLE',
+    'nothing'   :'RNOTHING',
 }
 tokens  = [
     'PARIZQ',
@@ -188,7 +192,11 @@ from Instrucciones.While import While
 from Instrucciones.For import For
 from Instrucciones.SentenciaTransferencia import SentenciaTransferencia
 from Instrucciones.DeclararArreglos import DeclararArreglos, Tipo_Declaracion_Arreglo, Declaracion_Arreglo
-
+from Instrucciones.Parametros import Parametros
+from Instrucciones.Funcion import Funcion
+from Instrucciones.Llamada import Llamada
+from Instrucciones.DeclararStructs import DeclararStructs, Tipo_Struct
+from Instrucciones.LlamarStructs import LlamadaStructs
 
 # Definición de la gramática
 def p_init(t) :
@@ -221,7 +229,9 @@ def p_instrucciones_(t):
                         | ins_asignacion
                         | asignacion_instr_dos  PTCOMA
                         | ins_for 
-                        | ins_arreglos_dimensionales'''
+                        | ins_arreglos_dimensionales
+                        | ins_funcion
+                        | ins_structs'''
     t[0] = t[1]
 
 def p_instruccion_error(t):
@@ -357,8 +367,8 @@ def p_instrucciones_Arreglos_dimensionales(t):
     t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[1], t[2], t[4], Tipo_Declaracion_Arreglo.DECLARACION, Declaracion_Arreglo.MAS)
 
 def p_instrucciones_Arreglos_dimensionales_PUSH_MAS(t):
-    '''ins_arreglos_dimensionales :  ID arreglos_lista PUNTOS RPUSH PARIZQ expresion PARDER PTCOMA'''
-    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[1], t[2], t[6], Tipo_Declaracion_Arreglo.PUSH, Declaracion_Arreglo.MAS)
+    '''ins_arreglos_dimensionales :  RPUSH NOT PARIZQ ID arreglos_lista COMA expresion PARDER PTCOMA'''
+    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[4], t[5], t[7], Tipo_Declaracion_Arreglo.PUSH, Declaracion_Arreglo.MAS)
 
 
 def p_Arreglos_dimensionales_list1(t):
@@ -378,8 +388,8 @@ def p_Arreglos_dimensionales_list2(t):
         t[0] = []
 
 def p_expresion_POP_MAS(t):
-    '''expresion :  ID arreglos_lista PUNTOS RPOP PARIZQ PARDER '''
-    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[1], t[2], None, Tipo_Declaracion_Arreglo.POP, Declaracion_Arreglo.MAS)
+    '''expresion :  RPOP NOT  PARIZQ ID arreglos_lista PARDER '''
+    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[4], t[5], None, Tipo_Declaracion_Arreglo.POP, Declaracion_Arreglo.MAS)
 
 def p_expresion_LENGTH_MAS(t):
     '''expresion :  RLENGTH PARIZQ ID arreglos_lista PARDER '''
@@ -387,12 +397,12 @@ def p_expresion_LENGTH_MAS(t):
 
 
 def p_instrucciones_Arreglos_dimensionales_PUSH_SIMPLE(t):
-    '''ins_arreglos_dimensionales :  ID PUNTOS RPUSH PARIZQ expresion PARDER PTCOMA'''
-    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[1], None, t[5], Tipo_Declaracion_Arreglo.PUSH, Declaracion_Arreglo.SIMPLE)
+    '''ins_arreglos_dimensionales :  RPUSH NOT PARIZQ ID COMA expresion PARDER PTCOMA'''
+    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[4], None, t[6], Tipo_Declaracion_Arreglo.PUSH, Declaracion_Arreglo.SIMPLE)
 
 def p_instrucciones_Arreglos_dimensionales_POP_SIMPLE(t):
-    '''expresion :  ID PUNTOS RPOP PARIZQ  PARDER'''
-    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[1], None, None, Tipo_Declaracion_Arreglo.POP, Declaracion_Arreglo.SIMPLE)
+    '''expresion :  RPOP NOT PARIZQ ID PARDER'''
+    t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[4], None, None, Tipo_Declaracion_Arreglo.POP, Declaracion_Arreglo.SIMPLE)
 
 def p_instrucciones_Arreglos_dimensionales_LENGTH_SIMPLE(t):
     '''expresion :  RLENGTH PARIZQ ID PARDER'''
@@ -401,6 +411,100 @@ def p_instrucciones_Arreglos_dimensionales_LENGTH_SIMPLE(t):
 def p_instrucciones_Arreglos_dimensionales_ACCEDER(t):
     '''expresion :  ID arreglos_lista'''
     t[0] = DeclararArreglos(t.lineno(1), find_column(input, t.slice[1]), t[1], t[2], None, Tipo_Declaracion_Arreglo.ACCEDER, Declaracion_Arreglo.MAS)
+
+#---------------------- FUNCIONES --------------------------------
+def p_instrucciones_FUNCION_(t):
+    '''ins_funcion :  RFUNCTION ID  PARIZQ lista_parametros PARDER instrucciones REND PTCOMA '''
+    t[0] = Funcion(t.lineno(1), find_column(input, t.slice[1]), t[2], t[4], t[6])
+
+def p_lista_parametros1(t):
+    'lista_parametros    : lista_parametros COMA ID'
+    if t[2] != None:
+        t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[3]), t[3]))
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
+
+def p_lista_parametros2(t):
+    'lista_parametros   : ID '
+    if t[1] != None:
+        t[0] = []
+        t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+    else:
+        t[0] = []
+
+def p_lista_parametros3(t):
+    'lista_parametros    : lista_parametros COMA ID DOBLEDOS tipodatos'
+    if t[2] != None:
+        t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[3]), t[3]))
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
+
+def p_lista_parametros4(t):
+    'lista_parametros   : ID DOBLEDOS tipodatos '
+    if t[1] != None:
+        t[0] = []
+        t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+    else:
+        t[0] = []
+
+#---------------------- LLAMADA --------------------------------
+def p_instrucciones_LLAMADA(t):
+    '''ins_funcion :  ID  PARIZQ expresiones PARDER PTCOMA '''
+    t[0] = Llamada(t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+def p_instrucciones_LLAMADA_RETURN(t):
+    '''expresion :  ID  PARIZQ expresiones PARDER  '''
+    t[0] = Llamada(t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+#-------------------- STRUCTS --------------------------------
+def p_instrucciones_STRUCT_MUTABLE(t):
+    '''ins_structs :  RMUTABLE RSTRUCT ID lista_parametros_struct PTCOMA REND PTCOMA  '''
+    t[0] = DeclararStructs(t.lineno(1), find_column(input, t.slice[1]), t[3], t[4], Tipo_Struct.MUTABLE)
+
+def p_instrucciones_STRUCT_INMUTABLE(t):
+    '''ins_structs :  RSTRUCT ID lista_parametros_struct PTCOMA REND PTCOMA  '''
+    t[0] = DeclararStructs(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3], Tipo_Struct.INMUTABLE)
+
+def p_lista_parametros_struct1(t):
+    'lista_parametros_struct  : lista_parametros_struct PTCOMA ID '
+    if t[2] != None:
+        t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[3]), t[3]))
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
+
+def p_lista_parametros_struct2(t):
+    'lista_parametros_struct   : ID '
+    if t[1] != None:
+        t[0] = []
+        t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+    else:
+        t[0] = []
+
+def p_lista_parametros_struct3(t):
+    'lista_parametros_struct   : lista_parametros_struct PTCOMA ID DOBLEDOS tipodatos '
+    if t[2] != None:
+        t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[3]), t[3]))
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
+
+def p_lista_parametros_struct4(t):
+    'lista_parametros_struct   : ID DOBLEDOS tipodatos '
+    if t[1] != None:
+        t[0] = []
+        t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+    else:
+        t[0] = []
+
+def p_instrucciones_STRUCT_LLAMADA(t):
+    '''expresion :  ID PARIZQ  PARDER PTCOMA  '''
+    t[0] = LlamadaStructs(t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+
+
 #---------------------- EXPRESIONES ARITMETICAS --------------------
 def p_expresion_aritmetica(t):
     '''expresion : expresion MAS expresion
@@ -564,6 +668,10 @@ def p_expresion_ID(t):
     'expresion    : ID'
     t[0] = Variable(t.lineno(1), find_column(input, t.slice[1]), t[1])
 
+def p_expresion_Nothing(t):
+    'expresion    : RNOTHING'
+    t[0] = Primitivo(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), None )
+
 
 
 
@@ -602,13 +710,14 @@ def parse(inp):
     ast.setTablaSimbolos(tabla)
     ast.setGlobal(tabla)
     print("----contador--")
-    print(str(ast.getInstrucciones()))
-    if ast.getInstrucciones()[0] != None:
-        for i in ast.getInstrucciones():
-            #print(str(i))
-            i.interpretar(ast, tabla)
+    if ast.getInstrucciones():
+        print(str(ast.getInstrucciones()))
+        if ast.getInstrucciones()[0] != None:
+            for i in ast.getInstrucciones():
+                #print(str(i))
+                i.interpretar(ast, tabla)
 
-        print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
+            print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
 
     return ast
 

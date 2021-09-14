@@ -38,10 +38,10 @@ class Condicional(instruccion):
                             tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                             return result
 
-                        if isinstance(result, SentenciaTransferencia):
+                        if isinstance(j, SentenciaTransferencia):
                             #print('TRANSFERENCIA -> ', result)
-                            if result != None:
-                                return result
+                            if j != None:
+                                return j
                     return
         else:
             #--------------- IF ----------------------
@@ -68,9 +68,9 @@ class Condicional(instruccion):
                             tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                             return result
 
-                        if isinstance(result, SentenciaTransferencia):
-                            if result != None:
-                                return result
+                        if isinstance(j, SentenciaTransferencia):
+                            if j != None:
+                                return j
                     return
             
             #_------------------ ELSE -----------------
@@ -84,17 +84,17 @@ class Condicional(instruccion):
                 if isinstance(i, Excepcion): 
                     tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return Excepcion("Semantico", "Se esperaba un valor booleano para la condicion", self.linea, self.columna)
-
+                print('1CONDICIONAL -> ', i, ' <--')
                 result = i.interpretar(tree, tabla)
+                print('2CONDICIONAL -> ', result, ' <--')
                 if isinstance(result, Excepcion): 
                     tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return result
 
-                if isinstance(result, SentenciaTransferencia):
-                    if result != None:
-                        if result.getTipo().getTipos() == tipos.BREAK: return result
-                        elif result.getTipo().getTipos() == tipos.CONTINUE: return result
-                        elif result.getTipo().getTipos() == tipos.RETURN: return result
+                if isinstance(i, SentenciaTransferencia):
+                    if i != None:
+                        print('SENTENCIA-TRANSFERENCIA -> ', i)
+                        return i
 
     
 
