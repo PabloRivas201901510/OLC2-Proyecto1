@@ -11,12 +11,12 @@ from Instrucciones.SentenciaTransferencia import SentenciaTransferencia
 class Llamada(instruccion):
     def __init__(self, fila, columna, identificador, lista_parametros):
         super().__init__(Tipo(tipos.ARREGLO), fila, columna)
-        self.identificador = identificador + "_funtion"
+        self.identificador = identificador 
         self.lista_parametros = lista_parametros
 
     def interpretar(self, tree, table):
         
-        variable_function = table.getVariable(self.identificador)
+        variable_function = table.getVariable(self.identificador+ "_funtion")
         if variable_function:
             Datos_Function = variable_function.getValor()
 
@@ -31,44 +31,69 @@ class Llamada(instruccion):
             tree.setTablaSimbolos(tabla)
 
             #-----------LLENAMOS LOS PARAMETROS CON LAS EXPRESIONES DE ENTRADA -------
-            contador = 0
-            for i in Datos_Function.getParametros():
-                result = self.lista_parametros[contador].interpretar(tree, table)
-                tabla.setVariable(Simbolo(Tipo(tipos.NINGUNA), i.identificador , self.fila, self.columna, result))  
-                contador+=1
+            if Datos_Function.getParametros():
+                contador = 0
+                for i in Datos_Function.getParametros():
+                    i = i.interpretar(tree, table)
+                    result = self.lista_parametros[contador].interpretar(tree, table)
+                    tabla.setVariable(Simbolo(Tipo(tipos.NINGUNA), i.identificador , self.fila, self.columna, result))  
+                    contador+=1
 
             for i in Datos_Function.getInstrucciones():
                 #print('1INSTRUCCION -> ', i , ' ><<<<')
                 if isinstance(i, Excepcion): 
-                    tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                    return Excepcion("Semantico", "Error en el ciclo WHILE", self.fila, self.columna)
+                    tree.updateConsola("Error: Semantico, Error en la Llamada, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                    return Excepcion("Semantico", "Error en la Llamada", self.fila, self.columna)
                 
 
                 result = i.interpretar(tree, tabla)
                 if isinstance(result, Excepcion): 
-                    tree.updateConsola("Error: Semantico, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                    return Excepcion("Semantico", "Error en el ciclo WHILE", self.fila, self.columna)
+                    tree.updateConsola("Error: Semantico, Error en la Llamada, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                    return Excepcion("Semantico", "Error en la Llamada", self.fila, self.columna)
                 #print('2INSTRUCCION -> ', result)
                 if isinstance(i, SentenciaTransferencia):
                     #print('SOY UNA TRANSFERENCIA ---')
                     if i.tipo.getTipos() == tipos.BREAK: return
                     elif i.tipo.getTipos() == tipos.CONTINUE: break
-                    elif i.tipo.getTipos() == tipos.RETURN:  
-                        result = i.interpretar(tree, tabla).interpretar(tree, tabla)
-                        #print('LLAMADA REGRESA -> ', result)
-                        return result
+                    elif i.tipo.getTipos() == tipos.RETURN: 
+                        return result.interpretar(tree, tabla)
+
                 if isinstance(result, SentenciaTransferencia):
                     #print('SOY UNA TRANSFERENCIA ---')
                     if result.tipo.getTipos() == tipos.BREAK: return
                     elif result.tipo.getTipos() == tipos.CONTINUE: break
                     elif result.tipo.getTipos() == tipos.RETURN:  
-                        result = result.interpretar(tree, tabla).interpretar(tree, tabla)
+                        result = result.interpretar(tree, tabla)
                         #print('LLAMADA REGRESA -> ', result)
                         return result
 
+            #self.interpretar(tree, table) 
         else:
-            tree.updateConsola("Error: Semantico, La funncion no existe, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-            return Excepcion("Semantico", "Error la funncion no existe", self.fila, self.columna)
+            variable_struct = table.getVariable(self.identificador+ "_Structs")
+            if variable_struct:
+                Primitivo_Struct = variable_struct.getValor()
+                Datos_Struct = Primitivo_Struct.interpretar(tree, table).valor
+                
+                if len(Datos_Struct.getParametros()) != len(self.lista_parametros):
+                    tree.updateConsola("Error: Semantico, La cantidad de valores ingresados no coinciden con la cantidad de parametros en el struct, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                    return Excepcion("Semantico", "La cantidad de valores ingresados no coinciden con la cantidad de parametros en el struct", self.fila, self.columna)
+
+       
+
+                contador = 0
+                for i in Datos_Struct.getParametros():
+                    i = i.interpretar(tree, table)
+                    valor = self.lista_parametros[contador].interpretar(tree, table)
+                    Datos_Struct.changeItem(i.identificador,  valor)
+                    contador +=1
+                
+
+
+                return Primitivo(Tipo(tipos.STRUCT), self.fila, self.columna, Datos_Struct.diccionario_struct)
+
+            else:
+                tree.updateConsola("Error: Semantico, Error en la Llamada, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                return Excepcion("Semantico", "Error en la Llamada", self.fila, self.columna)
 
     def getNodo(self):
         pass

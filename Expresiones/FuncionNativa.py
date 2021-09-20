@@ -13,10 +13,10 @@ class FuncionNativa(instruccion):
         self.expresion = derecha
 
     def interpretar(self, tree, table):
-        print("funcion nativa")
-        print(self.expresion)
+        #print("funcion nativa")
+        #print(self.expresion)
         expresion = self.expresion.interpretar(tree, table)
-        print(expresion)
+        #print(expresion)
         if isinstance(expresion, Excepcion): return expresion
         
         #------------- FUNCION PARSE --------------

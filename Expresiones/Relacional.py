@@ -23,9 +23,15 @@ class Relacional(instruccion):
         if isinstance(izquierdo, Excepcion): return izquierdo
         derecho = self.derecha.interpretar(tree, table)
         if isinstance(derecho, Excepcion): return derecho
+        #print("---> ", self.operador)
+        #print("---> ", izquierdo.valor, " -- ", derecho.valor, " == ", izquierdo.valor == derecho.valor)
+       
+
+
 
         #---------MENOR QUE -------
         if self.operador == tipos_relacional.MENORQUE:
+            #print( " --- < ", izquierdo.valor < derecho.valor , "\n")
             return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, izquierdo.valor < derecho.valor)
         #---------MAYOR QUE -------
         elif self.operador == tipos_relacional.MAYORQUE:

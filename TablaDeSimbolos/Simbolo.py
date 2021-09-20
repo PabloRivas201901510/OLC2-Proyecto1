@@ -1,11 +1,12 @@
 
 class Simbolo:
-    def __init__(self, tipo, identificador, fila, columna, valor = None):
+    def __init__(self, tipo, identificador, fila, columna, valor = None, esGlobal=None):
         self.tipo = tipo
         self.id = identificador
         self.fila = fila
         self.columna = columna
         self.valor = valor 
+        self.esGlobal = esGlobal
 
     def getIdentificador(self):
         return self.id

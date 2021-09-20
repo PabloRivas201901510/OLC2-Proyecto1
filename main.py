@@ -1,5 +1,5 @@
 from flask import Flask, redirect, url_for, render_template, request
-from grammar import parse
+from grammar import parse, getdotTablaSimbolos, generardotErrores
 app = Flask(__name__)
 
 tmp_val=''
@@ -25,6 +25,8 @@ def analyze():
 def output():
     global tmp_val
     result = parse(tmp_val)
+    no = getdotTablaSimbolos(result)
+    ne = generardotErrores()
     return render_template('output.html', input=result.getConsola())
 
 if __name__ == "__main__":

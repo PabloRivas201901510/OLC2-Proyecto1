@@ -1,3 +1,4 @@
+from datetime import datetime
 
 class Excepcion:
     def __init__(self, tipo, descripcion, fila, columna):
@@ -5,6 +6,9 @@ class Excepcion:
         self.descripcion = descripcion
         self.fila = fila
         self.columna = columna
+        self.date = None
+        self.Time = None
+        self.getDate()
 
     def toString(self):
         return self.tipo + " - " + self.descripcion + " [" + self.fila + ", " + self.columna + "]"
@@ -23,3 +27,14 @@ class Excepcion:
 
     def getColumna(self):
         return self.columna
+
+    def getFecha(self):
+        return self.date
+
+    def getHora(self):
+        return self.Time
+
+    def getDate(self):
+        now = datetime.now()
+        self.date = str(now.day)+"/"+str(now.month)+"/"+str(now.year)
+        self.Time = str(now.hour)+":"+str(now.minute)+":"+str(now.second)

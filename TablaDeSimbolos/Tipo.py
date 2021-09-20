@@ -31,3 +31,4 @@ class tipos(Enum):
     NINGUNA = 12
     NONE = 13
     ARREGLO = 14
+    GLOBAL = 15

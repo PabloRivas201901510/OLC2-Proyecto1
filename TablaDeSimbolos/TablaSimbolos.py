@@ -22,6 +22,7 @@ class TablaSimbolos:
     def getVariable(self, identificador):
         tablaActual = self
         while tablaActual != None:
+            
             if identificador in tablaActual.tabla :
                 return tablaActual.tabla[identificador]           # RETORNA SIMBOLO
             else:

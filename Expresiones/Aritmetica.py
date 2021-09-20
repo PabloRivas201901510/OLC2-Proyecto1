@@ -29,7 +29,7 @@ class Aritmetica(instruccion):
 
             derecho = self.derecha.interpretar(tree, table)
             if isinstance(derecho, Excepcion): return derecho
-            print(izquierdo, " , ", derecho)
+            #print(izquierdo, " , ", derecho)
         else:
             unario = self.opU.interpretar(tree, table)
             if isinstance(unario, Excepcion): return unario

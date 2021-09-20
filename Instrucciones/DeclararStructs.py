@@ -11,13 +11,14 @@ from Abstract.NodoArbol import NodoArbol
 class DeclararStructs(instruccion):
     def __init__(self,  fila, columna, Identificador, lista_parametros, tipo_struct):
         super().__init__(Tipo(tipos.STRUCT), fila, columna)
-        self.Identificador = Identificador
+        self.Identificador = Identificador+"_Structs"
         self.lista_parametros = lista_parametros
         self.tipo_struct = tipo_struct
+        self.diccionario_struct = {}
 
     def interpretar(self, tree, table):
-        table.setVariable(Simbolo(Tipo(tipos.STRUCT), self.Identificador, self.fila, self.columna, self))
-
+        table.setVariable(Simbolo(Tipo(tipos.STRUCT), self.Identificador, self.fila, self.columna, Primitivo(Tipo(tipos.STRUCT), self.fila, self.columna, self) ))
+        
     def getNodo(self):
         pass
 
@@ -26,6 +27,19 @@ class DeclararStructs(instruccion):
 
     def getIdentificador(self):
         return self.Identificador
+
+    def changeItem(self, key, value):
+        self.diccionario_struct[key] = value
+
+    def find_Key(self, Key):
+        for i, j in self.diccionario_struct.items():
+            if i == Key:
+                return j
+        return False
+
+    
+
+  
 
 class Tipo_Struct(Enum):
     MUTABLE = 1

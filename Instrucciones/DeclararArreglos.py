@@ -50,7 +50,7 @@ class DeclararArreglos(instruccion):
                     if isinstance(posicion, Excepcion): 
                         tree.updateConsola("Error: Semantico, Error en las posiciones1,  Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                         return Excepcion("Semantico", "Error en las posiciones", self.fila, self.columna)
-                    print('POSICION DE ENTRADA -> ', posicion.valor)
+                    #print('POSICION DE ENTRADA -> ', posicion.valor)
                     if int(posicion.valor) < 1:
                         tree.updateConsola("Error: Semantico, Error en las posiciones2,  Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                         return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, False)
@@ -62,10 +62,10 @@ class DeclararArreglos(instruccion):
                     tmp1.append(j)
 
                 if self.tipo_declaracion == Tipo_Declaracion_Arreglo.ACCEDER:
-                    print('ACCEDI BIEN AQUI---------------------')
+                    #print('ACCEDI BIEN AQUI---------------------')
                     valor = self.Accesso_Arreglos(tmp1, valor_variable, valor_expresion, tree, table)
                     valor = self.valor_retorno.interpretar(tree, table)
-                    print('TIENE QUE SER PRIMIRIVO -> ', valor)
+                    #print('TIENE QUE SER PRIMIRIVO -> ', valor)
                     return valor
                     
                 valor = self.find_element(tmp1, valor_variable, valor_expresion, tree, table, 0)
@@ -154,7 +154,7 @@ class DeclararArreglos(instruccion):
         #RECORREMOS LA LISTA Y COMPARAMOS
         for index, value in enumerate(lista):
             
-            print(index, " == ", valor_copia)
+            #print(index, " == ", valor_copia)
             if index == valor_copia:
                 valor_acceso = value.interpretar(tree, table)
                 #print('E -> ', posiciones)

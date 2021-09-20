@@ -45,6 +45,7 @@ reservadas = {
     'struct'    :'RSTRUCT',
     'mutable'   :'RMUTABLE',
     'nothing'   :'RNOTHING',
+    'global'    :'RGLOBAL',
 }
 tokens  = [
     'PARIZQ',
@@ -196,7 +197,7 @@ from Instrucciones.Parametros import Parametros
 from Instrucciones.Funcion import Funcion
 from Instrucciones.Llamada import Llamada
 from Instrucciones.DeclararStructs import DeclararStructs, Tipo_Struct
-from Instrucciones.LlamarStructs import LlamadaStructs
+from Instrucciones.AccederStructs import AccesoStructs, Tipo_Acesso_Struct
 
 # Definición de la gramática
 def p_init(t) :
@@ -231,7 +232,8 @@ def p_instrucciones_(t):
                         | ins_for 
                         | ins_arreglos_dimensionales
                         | ins_funcion
-                        | ins_structs'''
+                        | ins_structs
+                        | ins_acceder_struct'''
     t[0] = t[1]
 
 def p_instruccion_error(t):
@@ -244,9 +246,18 @@ def p_instrucciones_IMPRIMIRLN(t):
     'ins_println : RPRINTLN PARIZQ expresiones PARDER PTCOMA'
     t[0] = println(t[3], t.lineno(1), find_column(input, t.slice[1]), Tipo_Print.SALTO)
 
+def p_instrucciones_IMPRIMIRLN_VACIO(t):
+    'ins_println : RPRINTLN PARIZQ  PARDER PTCOMA'
+    t[0] = println([Primitivo(Tipo(tipos.CADENA), t.lineno(1), find_column(input, t.slice[1]), "")], t.lineno(1), find_column(input, t.slice[1]), Tipo_Print.SALTO)
+
 def p_instrucciones_IMPRIMIR(t):
     'ins_print : RPRINT PARIZQ expresiones PARDER PTCOMA'
     t[0] = println(t[3], t.lineno(1), find_column(input, t.slice[1]), Tipo_Print.LINEA)
+
+def p_instrucciones_IMPRIMIR_VACIO(t):
+    'ins_print : RPRINT PARIZQ  PARDER PTCOMA'
+    t[0] = println([Primitivo(Tipo(tipos.CADENA), t.lineno(1), find_column(input, t.slice[1]), "")], t.lineno(1), find_column(input, t.slice[1]), Tipo_Print.LINEA)
+
 
 def p_expresiones_lista(t):
     'expresiones    : expresiones COMA expresion'
@@ -265,6 +276,10 @@ def p_expresion_lista1(t):
         t[0] = []
 
 #--------------------- DECLARACIONES Y ASIGNACIONES -----------------
+def p_instrucciones_DECLARACION_GLOBAL(t):
+    'ins_asignacion : RGLOBAL ID IGUAL expresion PTCOMA'
+    t[0] = Declaracion(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[2], t[4])
+
 def p_instrucciones_DECLARACION(t):
     'ins_asignacion : ID IGUAL expresion PTCOMA'
     t[0] = Declaracion(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
@@ -272,6 +287,10 @@ def p_instrucciones_DECLARACION(t):
 def p_instrucciones_DECLARACION_TIPO(t):
     '''asignacion_instr_dos : ID IGUAL expresion DOBLEDOS tipodatos '''
     t[0] = Declaracion(t[5], t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+def p_instrucciones_DECLARACION_TIPO_OTRO(t):
+    '''asignacion_instr_dos : ID IGUAL expresion DOBLEDOS ID '''
+    t[0] = Declaracion(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
 
 def p_tipop(t):
     '''tipodatos        : RTINT
@@ -417,6 +436,10 @@ def p_instrucciones_FUNCION_(t):
     '''ins_funcion :  RFUNCTION ID  PARIZQ lista_parametros PARDER instrucciones REND PTCOMA '''
     t[0] = Funcion(t.lineno(1), find_column(input, t.slice[1]), t[2], t[4], t[6])
 
+def p_instrucciones_FUNCION_SINPAR(t):
+    '''ins_funcion :  RFUNCTION ID  PARIZQ PARDER instrucciones REND PTCOMA '''
+    t[0] = Funcion(t.lineno(1), find_column(input, t.slice[1]), t[2], [], t[5])
+
 def p_lista_parametros1(t):
     'lista_parametros    : lista_parametros COMA ID'
     if t[2] != None:
@@ -434,7 +457,8 @@ def p_lista_parametros2(t):
         t[0] = []
 
 def p_lista_parametros3(t):
-    'lista_parametros    : lista_parametros COMA ID DOBLEDOS tipodatos'
+    '''lista_parametros    : lista_parametros COMA ID DOBLEDOS tipodatos
+                            | lista_parametros COMA ID DOBLEDOS ID'''
     if t[2] != None:
         t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[3]), t[3]))
         t[0] = t[1]
@@ -442,7 +466,8 @@ def p_lista_parametros3(t):
         t[0] = t[1]
 
 def p_lista_parametros4(t):
-    'lista_parametros   : ID DOBLEDOS tipodatos '
+    '''lista_parametros   : ID DOBLEDOS tipodatos
+                        |  ID DOBLEDOS ID '''
     if t[1] != None:
         t[0] = []
         t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
@@ -454,9 +479,17 @@ def p_instrucciones_LLAMADA(t):
     '''ins_funcion :  ID  PARIZQ expresiones PARDER PTCOMA '''
     t[0] = Llamada(t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
 
+def p_instrucciones_LLAMADA_SINPAR(t):
+    '''ins_funcion :  ID  PARIZQ PARDER PTCOMA '''
+    t[0] = Llamada(t.lineno(1), find_column(input, t.slice[1]), t[1], [])
+
 def p_instrucciones_LLAMADA_RETURN(t):
     '''expresion :  ID  PARIZQ expresiones PARDER  '''
     t[0] = Llamada(t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+def p_instrucciones_LLAMADA_RETURN_SINPAR(t):
+    '''expresion :  ID  PARIZQ  PARDER  '''
+    t[0] = Llamada(t.lineno(1), find_column(input, t.slice[1]), t[1], [])
 
 #-------------------- STRUCTS --------------------------------
 def p_instrucciones_STRUCT_MUTABLE(t):
@@ -484,7 +517,8 @@ def p_lista_parametros_struct2(t):
         t[0] = []
 
 def p_lista_parametros_struct3(t):
-    'lista_parametros_struct   : lista_parametros_struct PTCOMA ID DOBLEDOS tipodatos '
+    '''lista_parametros_struct   : lista_parametros_struct PTCOMA ID DOBLEDOS tipodatos 
+                                 | lista_parametros_struct PTCOMA ID DOBLEDOS ID '''
     if t[2] != None:
         t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[3]), t[3]))
         t[0] = t[1]
@@ -492,16 +526,42 @@ def p_lista_parametros_struct3(t):
         t[0] = t[1]
 
 def p_lista_parametros_struct4(t):
-    'lista_parametros_struct   : ID DOBLEDOS tipodatos '
+    '''lista_parametros_struct   : ID DOBLEDOS tipodatos 
+                                 | ID DOBLEDOS ID'''
     if t[1] != None:
         t[0] = []
         t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
     else:
         t[0] = []
 
-def p_instrucciones_STRUCT_LLAMADA(t):
-    '''expresion :  ID PARIZQ  PARDER PTCOMA  '''
-    t[0] = LlamadaStructs(t.lineno(1), find_column(input, t.slice[1]), t[1], t[3])
+
+def p_instrucciones_STRUCT_ACCEDER(t):
+    '''expresion : ID PUNTOS  lista_parametros_struct_punto  '''
+    t[3].insert(0, Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+    #print('LISTA ACCEDER -> ', t[3])
+    t[0] = AccesoStructs(t.lineno(1), 0, t[3], None, Tipo_Acesso_Struct.ACCESO)
+
+def p_instrucciones_STRUCT_ASIGNAR(t):
+    '''ins_acceder_struct : ID PUNTOS lista_parametros_struct_punto IGUAL expresion PTCOMA  '''
+    t[3].insert(0, Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+    #print('LISTA ASIGNAR -> ', t[3])
+    t[0] = AccesoStructs(t.lineno(1), 0, t[3], t[5], Tipo_Acesso_Struct.ASIGNAR)
+
+def p_lista_parametros_struct_punto1(t):
+    'lista_parametros_struct_punto  : lista_parametros_struct_punto PUNTOS ID '
+    if t[1] != None:
+        t[1].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[2]), t[3]))
+        t[0] = t[1]
+    else:
+        t[0] = t[1]
+
+def p_lista_parametros_struct_punto2(t):
+    'lista_parametros_struct_punto   : ID  '
+    t[0] = []
+    t[0].append(Parametros(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[1]))
+
+
+
 
 
 
@@ -670,7 +730,7 @@ def p_expresion_ID(t):
 
 def p_expresion_Nothing(t):
     'expresion    : RNOTHING'
-    t[0] = Primitivo(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), None )
+    t[0] = Primitivo(Tipo(tipos.NONE), t.lineno(1), find_column(input, t.slice[1]), None )
 
 
 
@@ -709,15 +769,80 @@ def parse(inp):
     tabla = TablaSimbolos()
     ast.setTablaSimbolos(tabla)
     ast.setGlobal(tabla)
-    print("----contador--")
-    if ast.getInstrucciones():
-        print(str(ast.getInstrucciones()))
-        if ast.getInstrucciones()[0] != None:
-            for i in ast.getInstrucciones():
-                #print(str(i))
-                i.interpretar(ast, tabla)
 
-            print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
+    if ast.getInstrucciones():
+        for i in ast.getInstrucciones():
+            #print(str(i))
+            if isinstance(i, Excepcion): errores.append(i)
+            result = i.interpretar(ast, tabla)
+            if isinstance(result, Excepcion): errores.append(result)
+
+        print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
 
     return ast
+
+def getdotTablaSimbolos(ast):
+    tabla = "digraph{ \n"
+    tabla += "Simbolos [shape=none, margin=0, label=<\n"
+    tabla += '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" >\n'
+    tabla += '<TR><TD bgcolor=" yellow:red"> IDENTIFICADOR </TD><TD bgcolor=" yellow:red">TIPO SIMBOLO </TD><TD bgcolor=" yellow:red"> ENTORNO </TD><TD bgcolor=" yellow:red"> FILA </TD><TD bgcolor=" yellow:red"> COLUMNA </TD></TR> \n'
+    lista1 = []
+    for i in ast.getTablaSimbolos():
+        for j,k in i.getTable().items():
+            if k.tipo.getTipos() == tipos.FUNCION:
+                variable = j
+                tipo_variable = "funcion"
+            elif k.tipo.getTipos() == tipos.STRUCT:
+                variable = j
+                tipo_variable = "struct"
+            else:
+                variable = j
+                tipo_variable = "variable"
+
+            if i.getEntorno():
+                entorno = i.getEntorno()
+            else:
+                entorno = "Global"
+
+            if k.esGlobal:
+                entorno = "Global"
+
+            cadena = "<TR><TD>"+variable+"</TD><TD>"+tipo_variable+"</TD><TD>"+entorno+"</TD><TD>"+str(k.getFila())+"</TD><TD>"+str(k.getColumna())+"</TD></TR> \n"
+            lista1.append(cadena)
+
+    lista2 = []
+    for l in lista1:
+        if l not in lista2:
+            lista2.append(l)
+
+    for m in lista2:
+        tabla += m
+    tabla += "</TABLE>>] \n }"
+
+    print(tabla)
+    return tabla
+
+
+def generardotErrores():
+    tabla = "digraph{ \n"
+    tabla += "erroress [shape=none, margin=0, label=<\n"
+    tabla += '<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" >\n'
+    tabla += '<TR><TD bgcolor="blue:green"> TIPO </TD><TD bgcolor="blue:green"> DESCRIPCION </TD><TD bgcolor="blue:green"> LINEA </TD><TD bgcolor="blue:green"> COLUMNA </TD><TD bgcolor="blue:green"> FECHA </TD><TD bgcolor="blue:green"> HORA </TD></TR> \n'
+    lista1 = []
+    for i in errores:
+        cadena ="<TR><TD>"+str(i.getTipo())+"</TD><TD>"+str(i.getDescripcion())+"\n"
+        cadena += "</TD><TD>"+str(i.getFila())+"</TD><TD>"+str(i.getColumna())+"</TD><TD>"+str(i.getFecha())+"</TD><TD>"+str(i.getHora())+"</TD></TR> \n"
+        lista1.append(cadena)
+
+    lista2 = []
+    for l in lista1:
+        if l not in lista2:
+            lista2.append(l)
+
+    for m in lista2:
+        tabla += m
+
+    tabla += "</TABLE>>] \n }"
+    print(tabla)
+    return tabla
 

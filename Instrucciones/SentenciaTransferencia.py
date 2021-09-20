@@ -9,7 +9,8 @@ class SentenciaTransferencia(instruccion):
 
     def interpretar(self, tree, table):
         if self.instrucciones != None:
-            return self.instrucciones
+            val = self.instrucciones.interpretar(tree, table)
+            return val
         else:
             return self
 

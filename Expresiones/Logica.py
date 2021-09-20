@@ -37,7 +37,7 @@ class Logica(instruccion):
             return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, izquierdo.valor and derecho.valor)
         #---------- NOT -----------
         elif self.operador == tipos_logicos.NOT:
-            print(not izquierdo.valor)
+            #print(not izquierdo.valor)
             return Primitivo(Tipo(tipos.BOOLEANO), self.fila, self.columna, (not izquierdo.valor))   
         else:
             tree.updateConsola("Error: Semantico, Operandos invalidos para RELACIONALES:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
