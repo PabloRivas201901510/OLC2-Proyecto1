@@ -40,4 +40,35 @@ class While(instruccion):
             condicion = self.condicion.interpretar(tree, table)
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("LOOP WHILE")
+        nodo.addleaf("while")
+        nodo.addNodo(self.condicion.getNodo())
+
+        nodo1 = NodoArbol("INSTRUCCIONES")
+        nodo.addNodo(nodo1)
+        contador = 0
+        contador_nodos = len(self.listaInstrucciones)
+        for k in self.listaInstrucciones:
+            if len(self.listaInstrucciones) == 1:
+                nodo3 = NodoArbol("INSTRUCCION")
+                nodo3.addNodo(k.getNodo())
+                nodo1.addNodo(nodo3)
+            else:
+                if contador != len(self.listaInstrucciones) -1 :
+                    nodo2 = NodoArbol("INSTRUCCIONES")
+                    nodo1.addNodo(nodo2)
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(self.listaInstrucciones[contador_nodos-1].getNodo()) 
+                    nodo1.addNodo(nodo3)
+                    nodo1 = nodo2
+                else:
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(self.listaInstrucciones[contador_nodos-1].getNodo()) 
+                    nodo1.addNodo(nodo3)
+
+                contador +=1
+                contador_nodos -=1
+
+        nodo.addleaf("END")
+        nodo.addleaf(";")
+        return nodo

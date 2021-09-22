@@ -27,7 +27,7 @@ class Llamada(instruccion):
                 return Excepcion("Semantico", "Error La cantidad de parametros no coinciden", self.fila, self.columna)
 
             tabla = TablaSimbolos(table)
-            tabla.setEntorno("FUNCTION")
+            tabla.setEntorno("function "+str(self.identificador))
             tree.setTablaSimbolos(tabla)
 
             #-----------LLENAMOS LOS PARAMETROS CON LAS EXPRESIONES DE ENTRADA -------
@@ -96,4 +96,34 @@ class Llamada(instruccion):
                 return Excepcion("Semantico", "Error en la Llamada", self.fila, self.columna)
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("LLAMADA")
+        nn1 = NodoArbol("IDENTIFICADOR")
+        nn1.addleaf(self.identificador)
+        nodo.addNodo(nn1)
+        nodo.addleaf("(")
+
+        n1 = NodoArbol("PARAMETROS")
+        nodo.addNodo(n1)
+        contador1 = 0
+        contador1_ns = len(self.lista_parametros)
+        for k in self.lista_parametros:
+            if len(self.lista_parametros) == 1:
+                n1.addNodo(k.getNodo())
+            else:
+                if contador1 != len(self.lista_parametros) -1 :
+                    n2 = NodoArbol("PARAMETROS")
+                    n1.addNodo(n2)
+                    n1.addleaf(",")
+                    n1.addNodo(self.lista_parametros[contador1_ns-1].getNodo()) 
+                    n1 = n2
+                else:
+                    n1.addNodo(self.lista_parametros[contador1_ns-1].getNodo()) 
+
+                contador1 +=1
+                contador1_ns -=1
+
+
+        nodo.addleaf(")")
+        nodo.addleaf(";")
+        return nodo
+        

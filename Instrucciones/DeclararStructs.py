@@ -1,3 +1,4 @@
+from TablaDeSimbolos.Arbol import Arbol
 from Expresiones.Primitivo import Primitivo
 from Instrucciones.Declaracion import Declaracion
 from enum import Enum
@@ -20,7 +21,31 @@ class DeclararStructs(instruccion):
         table.setVariable(Simbolo(Tipo(tipos.STRUCT), self.Identificador, self.fila, self.columna, Primitivo(Tipo(tipos.STRUCT), self.fila, self.columna, self) ))
         
     def getNodo(self):
-        pass
+        nodo = NodoArbol("DECLARACION \n STRUCT")
+        nodo.addleaf(self.Identificador)
+
+        n1 = NodoArbol("PARAMETROS")
+        nodo.addNodo(n1)
+        contador1 = 0
+        contador1_ns = len(self.lista_parametros)
+        for k in self.lista_parametros:
+            if len(self.lista_parametros) == 1:
+                n1.addNodo(k.getNodo())
+            else:
+                if contador1 != len(self.lista_parametros) -1 :
+                    n2 = NodoArbol("PARAMETROS")
+                    n1.addNodo(n2)
+                    n1.addNodo(self.lista_parametros[contador1_ns-1].getNodo()) 
+                    n1 = n2
+                else:
+                    n1.addNodo(self.lista_parametros[contador1_ns-1].getNodo()) 
+
+                contador1 +=1
+                contador1_ns -=1
+
+        nodo.addleaf("END")
+        nodo.addleaf(";")
+        return nodo
 
     def getParametros(self):
         return self.lista_parametros

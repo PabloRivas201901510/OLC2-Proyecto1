@@ -16,65 +16,95 @@ class Condicional_If(instruccion):
 
     def interpretar(self, tree, table):
         return self
-        print("ENTRE EN CONDICIONAL_IF")
-        condicion = None
-        if self.condicion != None:
-            value = self.condicion.interpretar(tree, table)
-            if isinstance(value, Excepcion): return value
-
-            if(self.condicion.tipo.getTipos() != tipos.BOOLEANO):
-                tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                return Excepcion("Semantico", "Se esperaba un valor booleano para la condicion", self.linea, self.columna)
-
-            condicion = value.valor
-
-        print("CONDICION")
-        print(condicion)
-        if condicion:
-            print("ENTRE AL IF")
-            tabla = TablaSimbolos(table)
-            tabla.setEntorno("Sentencia If")
-            tree.setTablaSimbolos(tabla)
-            for i in self.listaInstruccionesIF:
-
-                if isinstance(i, Excepcion): 
-                    tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                    return Excepcion("Semantico", "Se esperaba un valor booleano para la condicion", self.linea, self.columna)
-
-                result = i.interpretar(tree, tabla)
-                if isinstance(result, Excepcion): 
-                    tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                    return result
-
-                if result != None:
-                    if result.getTipo().getTipos() == tipos.BREAK: return result
-                    elif result.getTipo().getTipos() == tipos.CONTINUE: return result
-                    elif result.getTipo().getTipos() == tipos.RETURN: return result
-        else:
-            if self.listaInstruccionesELSE != None:
-                print("ENTRE AL ELSE")
-                tabla = TablaSimbolos(table)
-                tabla.setEntorno("Sentencia Elseif")
-                tree.setTablaSimbolos(tabla)
-                for i in self.listaInstruccionesELSE:
-                    if isinstance(i, Excepcion): 
-                        tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                        return Excepcion("Semantico", "Se esperaba un valor booleano para la condicion", self.linea, self.columna)
-
-                    result = i.interpretar(tree, tabla)
-                    if isinstance(result, Excepcion): 
-                        tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                        return result
-
-                    if result != None:
-                        if result.getTipo().getTipos() == tipos.BREAK: return result
-                        elif result.getTipo().getTipos() == tipos.CONTINUE: return result
-                        elif result.getTipo().getTipos() == tipos.RETURN: return result
-
-            elif self.elseIF != None:
-                print(self.elseIF)
-                result = self.elseIF.interpretar(tree, table)
-                return True
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("CONDICIONAL")
+        if self.elseIF == "if":
+            nodo.addleaf("if")
+            nodo.addNodo(self.condicion.getNodo())
+
+            nodo1 = NodoArbol("INSTRUCCIONES")
+            nodo.addNodo(nodo1)
+            contador = 0
+            contador_nodos = len(self.listaInstruccionesIF)
+            for k in self.listaInstruccionesIF:
+                if len(self.listaInstruccionesIF) == 1:
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(k.getNodo())
+                    nodo1.addNodo(nodo3)
+                else:
+                    if contador != len(self.listaInstruccionesIF) -1 :
+                        nodo2 = NodoArbol("INSTRUCCIONES")
+                        nodo1.addNodo(nodo2)
+                        nodo3 = NodoArbol("INSTRUCCION")
+                        nodo3.addNodo(self.listaInstruccionesIF[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+                        nodo1 = nodo2
+                    else:
+                        nodo3 = NodoArbol("INSTRUCCION")
+                        nodo3.addNodo(self.listaInstruccionesIF[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+
+                    contador +=1
+                    contador_nodos -=1
+            return nodo
+
+        elif self.elseIF == "elseif":
+            nodo.addleaf("elseif")
+            nodo.addNodo(self.condicion.getNodo())
+
+            nodo1 = NodoArbol("INSTRUCCIONES")
+            nodo.addNodo(nodo1)
+            contador = 0
+            contador_nodos = len(self.listaInstruccionesIF)
+            for k in self.listaInstruccionesIF:
+                if len(self.listaInstruccionesIF) == 1:
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(k.getNodo())
+                    nodo1.addNodo(nodo3)
+                else:
+                    if contador != len(self.listaInstruccionesIF) -1 :
+                        nodo2 = NodoArbol("INSTRUCCIONES")
+                        nodo1.addNodo(nodo2)
+                        nodo3 = NodoArbol("INSTRUCCION")
+                        nodo3.addNodo(self.listaInstruccionesIF[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+                        nodo1 = nodo2
+                    else:
+                        nodo3 = NodoArbol("INSTRUCCION")
+                        nodo3.addNodo(self.listaInstruccionesIF[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+
+                    contador +=1
+                    contador_nodos -=1
+        else:
+            nodo.addleaf("else")
+
+            nodo1 = NodoArbol("INSTRUCCIONES")
+            nodo.addNodo(nodo1)
+            contador = 0
+            contador_nodos = len(self.listaInstruccionesELSE)
+            for k in self.listaInstruccionesELSE:
+                if len(self.listaInstruccionesELSE) == 1:
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(k.getNodo())
+                    nodo1.addNodo(nodo3)
+                else:
+                    if contador != len(self.listaInstruccionesELSE) -1 :
+                        nodo2 = NodoArbol("INSTRUCCIONES")
+                        nodo1.addNodo(nodo2)
+                        nodo3 = NodoArbol("INSTRUCCION")
+                        nodo3.addNodo(self.listaInstruccionesELSE[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+                        nodo1 = nodo2
+                    else:
+                        nodo3 = NodoArbol("INSTRUCCION")
+                        nodo3.addNodo(self.listaInstruccionesELSE[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+
+                    contador +=1
+                    contador_nodos -=1
+                    
+        return nodo
+
+ 

@@ -55,7 +55,26 @@ class Relacional(instruccion):
 
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("EXPRESIONES \n RELACIONALES")
+        nodo.addNodo(self.izquierda.getNodo())
+
+        nodo1 = NodoArbol("OPERADOR \n RELACIONAL")
+        if self.operador == tipos_relacional.MAYORQUE:
+            nodo1.addleaf(">")
+        elif self.operador == tipos_relacional.MENORQUE:
+            nodo1.addleaf("<")
+        elif self.operador == tipos_relacional.MAYORIGUAL:
+            nodo1.addleaf(">=")
+        elif self.operador == tipos_relacional.MENORIGUAL:
+            nodo1.addleaf("<=")
+        elif self.operador == tipos_relacional.IGUALACION:
+            nodo1.addleaf("==")
+        elif self.operador == tipos_relacional.DIFERENCIACION:
+            nodo1.addleaf("!=")
+        nodo.addNodo(nodo1)
+        nodo.addNodo(self.derecha.getNodo())
+        return nodo
+
 
 class tipos_relacional(Enum):
     MAYORQUE = 1

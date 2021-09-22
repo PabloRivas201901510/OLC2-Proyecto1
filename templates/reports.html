@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Analyze Page{% endblock %}
+
+{% block content %}
+
+<div style="position: relative; margin: auto; width: 80%; height: 500px; border-radius: 20px; background-color:darkgrey;">   
+    <div style="width:100%; height:100%; overflow: scroll;">
+        <img src="data:image/svg+xml;base64,{{chart}}" style="margin: auto;">
+    </div>
+</div> 
+<br>
+
+<form action="/reports/symbol-report" method="GET">
+   <button type="submit" class="btn btn-primary">Tabla de Simbolos</button> 
+</form>
+
+<form action="/reports/error-report" method="GET">
+    <button type="submit" class="btn btn-primary">Tabla de Errores</button> 
+</form>
+
+<form action="/reports/tree-report" method="GET">
+    <button type="submit" class="btn btn-primary">AST</button> 
+ </form>
+
+
+{% endblock %}
+

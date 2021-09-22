@@ -69,7 +69,6 @@ class Condicional(instruccion):
 
                         if isinstance(j, SentenciaTransferencia):
                             if j != None:
-                                print('METODO IF -> ', j, '\n')
                                 return j
 
                         result = j.interpretar(tree, tabla)
@@ -94,21 +93,73 @@ class Condicional(instruccion):
                 
                 if isinstance(i, SentenciaTransferencia):
                     if i != None:
-                        print('METODO ELSE -> ', i, '\n')
                         return i
                 
 
                 result = i.interpretar(tree, tabla)
-                #print("2CONDICIONAL-ELSE -> ", result, '\n' )
                 if isinstance(result, Excepcion): 
                     tree.updateConsola("Error: Semantico, condicional Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                     return result
 
                 
 
-    
-
-            
-
     def getNodo(self):
-        pass
+        if self.sentenciaElse == None:
+            nodo1 = NodoArbol("SENTENCIAS \n CONDICIONALES")
+            nodo = nodo1
+            contador = 0
+            contador_nodos = len(self.sentenciaIf)
+            for k in self.sentenciaIf:
+                if len(self.sentenciaIf) == 1:
+                    nodo3 = NodoArbol("SENTENCIA \n CONDICIONAL")
+                    nodo3.addNodo(k.getNodo())
+                    nodo1.addNodo(nodo3)
+                else:
+                    if contador != len(self.sentenciaIf) -1 :
+                        nodo2 = NodoArbol("SENTENCIAS \n CONDICIONALES")
+                        nodo1.addNodo(nodo2)
+                        nodo3 = NodoArbol("SENTENCIA \n CONDICIONAL")
+                        nodo3.addNodo(self.sentenciaIf[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+                        nodo1 = nodo2
+                    else:
+                        nodo3 = NodoArbol("SENTENCIA \n CONDICIONAL")
+                        nodo3.addNodo(self.sentenciaIf[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+
+                    contador +=1
+                    contador_nodos -=1
+
+            nodo.addleaf("END")
+            nodo.addleaf(";")
+            return nodo
+        else:
+            nodo1 = NodoArbol("SENTENCIAS \n CONDICIONALES")
+            nodo = nodo1
+            contador = 0
+            self.sentenciaIf.append(self.sentenciaElse)
+            contador_nodos = len(self.sentenciaIf)
+            for k in self.sentenciaIf:
+                if len(self.sentenciaIf) == 1:
+                    nodo3 = NodoArbol("SENTENCIA \n CONDICIONAL")
+                    nodo3.addNodo(k.getNodo())
+                    nodo1.addNodo(nodo3)
+                else:
+                    if contador != len(self.sentenciaIf) -1 :
+                        nodo2 = NodoArbol("SENTENCIAS \n CONDICIONALES")
+                        nodo1.addNodo(nodo2)
+                        nodo3 = NodoArbol("SENTENCIA \n CONDICIONAL")
+                        nodo3.addNodo(self.sentenciaIf[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+                        nodo1 = nodo2
+                    else:
+                        nodo3 = NodoArbol("SENTENCIA \n CONDICIONAL")
+                        nodo3.addNodo(self.sentenciaIf[contador_nodos-1].getNodo()) 
+                        nodo1.addNodo(nodo3)
+
+                    contador +=1
+                    contador_nodos -=1
+
+            nodo.addleaf("END")
+            nodo.addleaf(";")
+            return nodo

@@ -1,3 +1,4 @@
+from Abstract.NodoArbol import NodoArbol
 from Excepciones.Excepcion import Excepcion
 from TablaDeSimbolos.Tipo import Tipo, tipos
 from Abstract.instruccion import instruccion
@@ -80,7 +81,46 @@ class FuncionNativa(instruccion):
         
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("FUNCION \n NATIVA")
+        if self.operador == tipos_funcionnativa.PARSE:
+            nodo.addleaf("parse")
+            nodo.addleaf("(")
+            nodo1 = NodoArbol("TIPO \n DATO")
+            if self.type.getTipos() == tipos.ENTERO:
+                nodo1.addleaf("Int64")
+            elif self.type.getTipos() == tipos.DECIMAL:
+                nodo1.addleaf("Float64")
+            nodo.addleaf(",")
+            nodo.addNodo(nodo1)
+
+        elif self.operador == tipos_funcionnativa.TRUNC:
+            nodo.addleaf("trunc")
+            nodo.addleaf("(")
+            nodo1 = NodoArbol("TIPO \n DATO")
+            if self.type.getTipos() == tipos.ENTERO:
+                nodo1.addleaf("Int64")
+            elif self.type.getTipos() == tipos.DECIMAL:
+                nodo1.addleaf("Float64")
+            nodo.addleaf(",")
+            nodo.addNodo(nodo1)
+
+        elif self.operador == tipos_funcionnativa.FLOAT:
+            nodo.addleaf("float")
+            nodo.addleaf("(")
+
+        elif self.operador == tipos_funcionnativa.STRING:
+            nodo.addleaf("string")
+            nodo.addleaf("(")
+
+        elif self.operador == tipos_funcionnativa.TYPEOF:
+            nodo.addleaf("typeof")
+            nodo.addleaf("(")
+
+
+        nodo.addNodo(self.expresion.getNodo())
+        nodo.addleaf(")")
+        return nodo
+
 
 class tipos_funcionnativa(Enum):
     PARSE = 1

@@ -21,4 +21,6 @@ class Variable(instruccion):
             return Excepcion("Semántico", "La variable "+str(self.identificador)+" no existe", self.fila, self.columna)
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("IDENTIFICADOR")
+        nodo.addleaf(self.identificador)
+        return nodo

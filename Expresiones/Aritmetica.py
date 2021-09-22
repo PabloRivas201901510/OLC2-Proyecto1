@@ -244,7 +244,37 @@ class Aritmetica(instruccion):
 
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("EXPRESIONES \n ARITMETICAS")
+        if self.opU:
+            nodo1 = NodoArbol("TIPO \n OPERADOR")
+            nodo1.addleaf("-")
+            nodo.addNodo(nodo1)
+            nodo.addNodo(self.opU.getNodo())
+            return nodo
+        else:
+            nodo.addNodo(self.izquierda.getNodo())
+            nodo1 = NodoArbol("TIPO \n OPERADOR")
+            nodo1.addleaf(self.getTipoOperador(self.operador))
+            nodo.addNodo(nodo1)
+            nodo.addNodo(self.derecha.getNodo())
+            return nodo
+
+    def getTipoOperador(self, tipo):
+        if tipos_Aritmetica.SUMA == tipo:
+            return "+"
+        elif tipos_Aritmetica.RESTA == tipo:
+            return "-"
+        elif tipos_Aritmetica.MULTIPLICACION == tipo:
+            return "*"
+        elif tipos_Aritmetica.DIVISION == tipo:
+            return "/"
+        elif tipos_Aritmetica.MODULO == tipo:
+            return "%"
+        elif tipos_Aritmetica.POTENCIA == tipo:
+            return "^"
+        else: 
+            return tipo
+
 
 class tipos_Aritmetica(Enum):
     SUMA = 1

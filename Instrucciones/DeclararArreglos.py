@@ -21,8 +21,6 @@ class DeclararArreglos(instruccion):
 
     def interpretar(self, tree, table):
 
-        
-
         #OBTENEMOS LA VARIABLE PARA COMPROBAR SI EXISTE
         variable = table.getVariable(self.identificador)
         
@@ -177,7 +175,255 @@ class DeclararArreglos(instruccion):
                 return [lista, 0]
 
     def getNodo(self):
-        pass
+        nodonodo = NodoArbol("ARREGLOS")
+        
+        if self.declaracion == Declaracion_Arreglo.SIMPLE:
+            if self.tipo_declaracion == Tipo_Declaracion_Arreglo.PUSH:
+                nodo = NodoArbol("PUSH_ARREGLO")
+                nodonodo.addNodo(nodo)
+                nodo.addleaf("push")
+                nodo.addleaf("!")
+                nodo.addleaf("(")
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+                nodo.addleaf(",")
+                nodo.addNodo(self.expresion.getNodo())
+                nodo.addleaf(")")
+                nodo.addleaf(";")
+            elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.POP:
+                nodo = NodoArbol("POP_ARREGLO")
+                nodonodo.addNodo(nodo)
+                nodo.addleaf("pop")
+                nodo.addleaf("!")
+                nodo.addleaf("(")
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+                nodo.addleaf(")")
+                nodo.addleaf(";")
+            elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.LENGTH:
+                nodo = NodoArbol("LENGTH_ARREGLO")
+                nodonodo.addNodo(nodo)
+                nodo.addleaf("length")
+                nodo.addleaf("(")
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+                nodo.addleaf(")")
+                nodo.addleaf(";")
+
+        elif self.declaracion == Declaracion_Arreglo.MAS:
+            if self.tipo_declaracion == Tipo_Declaracion_Arreglo.DECLARACION:
+                nodo = NodoArbol("DECLARACION_ARREGLO")
+                nodonodo.addNodo(nodo)
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+
+                nodo1 = NodoArbol("POSICIONES")
+                nodo.addNodo(nodo1)
+                contador = 0
+                contador_nodos = len(self.posiciones)
+                for k in self.posiciones:
+                    if len(self.posiciones) == 1:
+                        nodo3 = NodoArbol("POSICION")
+                        nodo3.addleaf("[") 
+                        nodo3.addNodo(k.getNodo())
+                        nodo3.addleaf("]") 
+                        nodo1.addNodo(nodo3)
+                    else:
+                        if contador != len(self.posiciones) -1 :
+                            nodo2 = NodoArbol("POSICIONES")
+                            nodo1.addNodo(nodo2)
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+                            nodo1 = nodo2
+                        else:
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+
+                        contador +=1
+                        contador_nodos -=1
+                nodo.addleaf("=")
+                nodo.addNodo(self.expresion.getNodo())
+                nodo.addleaf(";")
+
+            elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.PUSH:
+                nodo = NodoArbol("PUSH_ARREGLO")
+                nodonodo.addNodo(nodo)
+                nodo.addleaf("push")
+                nodo.addleaf("!")
+                nodo.addleaf("(")
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+
+                nodo1 = NodoArbol("POSICIONES")
+                nodo.addNodo(nodo1)
+                contador = 0
+                contador_nodos = len(self.posiciones)
+                for k in self.posiciones:
+                    if len(self.posiciones) == 1:
+                        nodo3 = NodoArbol("POSICION")
+                        nodo3.addleaf("[") 
+                        nodo3.addNodo(k.getNodo())
+                        nodo3.addleaf("]") 
+                        nodo1.addNodo(nodo3)
+                    else:
+                        if contador != len(self.posiciones) -1 :
+                            nodo2 = NodoArbol("POSICIONES")
+                            nodo1.addNodo(nodo2)
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+                            nodo1 = nodo2
+                        else:
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+
+                        contador +=1
+                        contador_nodos -=1
+
+                nodo.addleaf(",")
+                nodo.addNodo(self.expresion.getNodo())
+                nodo.addleaf(")")
+                nodo.addleaf(";")
+
+            elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.POP:
+                nodo = NodoArbol("POP_ARREGLO")
+                nodonodo.addNodo(nodo)
+                nodo.addleaf("pop")
+                nodo.addleaf("!")
+                nodo.addleaf("(")
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+
+                nodo1 = NodoArbol("POSICIONES")
+                nodo.addNodo(nodo1)
+                contador = 0
+                contador_nodos = len(self.posiciones)
+                for k in self.posiciones:
+                    if len(self.posiciones) == 1:
+                        nodo3 = NodoArbol("POSICION")
+                        nodo3.addleaf("[") 
+                        nodo3.addNodo(k.getNodo())
+                        nodo3.addleaf("]") 
+                        nodo1.addNodo(nodo3)
+                    else:
+                        if contador != len(self.posiciones) -1 :
+                            nodo2 = NodoArbol("POSICIONES")
+                            nodo1.addNodo(nodo2)
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+                            nodo1 = nodo2
+                        else:
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+
+                        contador +=1
+                        contador_nodos -=1
+
+                nodo.addleaf(")")
+                nodo.addleaf(";")
+            elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.LENGTH:
+                nodo = NodoArbol("LENGTH_ARREGLO")
+                nodonodo.addNodo(nodo)
+                nodo.addleaf("length")
+                nodo.addleaf("(")
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+
+                nodo1 = NodoArbol("POSICIONES")
+                nodo.addNodo(nodo1)
+                contador = 0
+                contador_nodos = len(self.posiciones)
+                for k in self.posiciones:
+                    if len(self.posiciones) == 1:
+                        nodo3 = NodoArbol("POSICION")
+                        nodo3.addleaf("[") 
+                        nodo3.addNodo(k.getNodo())
+                        nodo3.addleaf("]") 
+                        nodo1.addNodo(nodo3)
+                    else:
+                        if contador != len(self.posiciones) -1 :
+                            nodo2 = NodoArbol("POSICIONES")
+                            nodo1.addNodo(nodo2)
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+                            nodo1 = nodo2
+                        else:
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+
+                        contador +=1
+                        contador_nodos -=1
+
+                nodo.addleaf(")")
+
+            elif self.tipo_declaracion == Tipo_Declaracion_Arreglo.ACCEDER:
+                nodo = NodoArbol("ACCESO_ARREGLO")
+                nodonodo.addNodo(nodo)
+                n1 = NodoArbol("IDENTIFICADOR")
+                n1.addleaf(self.identificador)
+                nodo.addNodo(n1)
+
+                nodo1 = NodoArbol("POSICIONES")
+                nodo.addNodo(nodo1)
+                contador = 0
+                contador_nodos = len(self.posiciones)
+                for k in self.posiciones:
+                    if len(self.posiciones) == 1:
+                        nodo3 = NodoArbol("POSICION")
+                        nodo3.addleaf("[") 
+                        nodo3.addNodo(k.getNodo())
+                        nodo3.addleaf("]") 
+                        nodo1.addNodo(nodo3)
+                    else:
+                        if contador != len(self.posiciones) -1 :
+                            nodo2 = NodoArbol("POSICIONES")
+                            nodo1.addNodo(nodo2)
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+                            nodo1 = nodo2
+                        else:
+                            nodo3 = NodoArbol("POSICION")
+                            nodo3.addleaf("[") 
+                            nodo3.addNodo(self.posiciones[contador_nodos-1].getNodo()) 
+                            nodo3.addleaf("]") 
+                            nodo1.addNodo(nodo3)
+
+                        contador +=1
+                        contador_nodos -=1
+        return nodonodo
 
 class Tipo_Declaracion_Arreglo(Enum):
     DECLARACION = 1

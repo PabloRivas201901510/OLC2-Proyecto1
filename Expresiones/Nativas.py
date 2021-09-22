@@ -1,3 +1,4 @@
+from Abstract.NodoArbol import NodoArbol
 from Excepciones.Excepcion import Excepcion
 from TablaDeSimbolos.Tipo import Tipo, tipos
 from Abstract.instruccion import instruccion
@@ -113,7 +114,37 @@ class Nativas(instruccion):
 
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("EXPRESION \n NATIVA")
+
+        if self.nativa == tipos_nativas.LOGARITMO10:
+            nodo.addleaf("log10")
+            nodo.addleaf("(")
+            nodo.addNodo(self.expresion.getNodo())
+        elif self.nativa == tipos_nativas.LOGARITMO:
+            nodo.addleaf("log")
+            nodo.addleaf("(")
+            nodo.addNodo(self.base.getNodo())
+            nodo.addleaf(",")
+            nodo.addNodo(self.expresion.getNodo())
+        elif self.nativa == tipos_nativas.SENO:
+            nodo.addleaf("sin")
+            nodo.addleaf("(")
+            nodo.addNodo(self.expresion.getNodo())  
+        elif self.nativa == tipos_nativas.COSENO:
+            nodo.addleaf("cos")
+            nodo.addleaf("(")
+            nodo.addNodo(self.expresion.getNodo())  
+        elif self.nativa == tipos_nativas.TANGENTE:
+            nodo.addleaf("tan")
+            nodo.addleaf("(")
+            nodo.addNodo(self.expresion.getNodo())  
+        elif self.nativa == tipos_nativas.RAIZCUADRADA:
+            nodo.addleaf("sqrt")
+            nodo.addleaf("(")
+            nodo.addNodo(self.expresion.getNodo())  
+
+        nodo.addleaf(")")
+        return nodo
 
 
 

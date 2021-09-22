@@ -45,7 +45,25 @@ class Logica(instruccion):
 
         
     def getNodo(self):
-        pass
+        nodo = NodoArbol("EXPRESIONES \n LOGICAS")
+        if tipos_logicos.NOT == self.operador:
+            nodo1 = NodoArbol("OPERADOR \n RELACIOANL")
+            nodo1.addleaf("!")
+            nodo.addNodo(nodo1)
+            nodo.addNodo(self.izquierda.getNodo())
+            return nodo
+
+        nodo.addNodo(self.izquierda.getNodo())
+        
+        nodo1 = NodoArbol("OPERADOR \n RELACIOANL")
+        if tipos_logicos.OR == self.operador:
+            nodo1.addleaf("||")
+        elif tipos_logicos.AND == self.operador:
+            nodo1.addleaf("&&")
+        nodo.addNodo(nodo1)
+        nodo.addNodo(self.derecha.getNodo())
+        return nodo
+
 
 
 class tipos_logicos(Enum):

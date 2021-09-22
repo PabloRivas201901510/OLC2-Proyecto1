@@ -178,6 +178,7 @@ from TablaDeSimbolos.Tipo import Tipo, tipos
 from TablaDeSimbolos.TablaSimbolos import TablaSimbolos
 from TablaDeSimbolos.Arbol import Arbol
 from Abstract.instruccion import instruccion
+from Abstract.NodoArbol import NodoArbol
 
 from Instrucciones.println import println, Tipo_Print
 from Expresiones.Aritmetica import Aritmetica, tipos_Aritmetica
@@ -339,15 +340,15 @@ def p_instrucciones_condicional_4(t):
 
 def p_instrucciones_CONDICIONAL_IF(t):
     '''sentecia_if : RIF expresion instrucciones'''
-    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3], None, None)
+    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3], None, "if")
 
 def p_instrucciones_CONDICIONAL_ELSEIF(t):
     '''sentecia_elseif : RELSEIF  expresion  instrucciones'''
-    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3],  None,  None)
+    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), t[2], t[3],  None,  "elseif")
 
 def p_instrucciones_CONDICIONAL_ELSE(t):
     '''sentencia_else : RELSE instrucciones'''
-    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), None, None, t[2],  None)
+    t[0] = Condicional_If(t.lineno(1), find_column(input, t.slice[1]), None, None, t[2],  "else")
 
 #--------------------- WHILE ---------------------------------
 def p_instrucciones_WHILE(t):
@@ -739,25 +740,6 @@ import ply.yacc as yacc
 parser = yacc.yacc()
 
 
-'''f = open("entrada.txt", "r")
-input = f.read()
-print(input)
-parser.parse(input)
-ast = Arbol(parser.parse(input))
-tabla = TablaSimbolos()
-ast.setTablaSimbolos(tabla)
-ast.setGlobal(tabla)
-print(str(ast.getInstrucciones()))
-if ast.getInstrucciones()[0][0] != None:
-    for i in ast.getInstrucciones()[0]:
-        print(str(i))
-        i.interpretar(ast, tabla)
-
-
-    print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
-
-'''
-
 
 def parse(inp):
     global errores
@@ -779,7 +761,63 @@ def parse(inp):
 
         print("\nCONSOLA UPDATE:"+str(ast.getConsola()))
 
+    init = NodoArbol("RAIZ")
+    if ast.getInstrucciones():
+        nodo1 = NodoArbol("INSTRUCCIONES")
+        init.addNodo(nodo1)
+
+        contador = 0
+        contador_nodos = len(ast.getInstrucciones())
+        for k in ast.getInstrucciones():
+            if len(ast.getInstrucciones()) == 1:
+                nodo3 = NodoArbol("INSTRUCCION")
+                nodo3.addNodo(k.getNodo())
+                nodo1.addNodo(nodo3)
+            else:
+                if contador != len(ast.getInstrucciones()) -1 :
+                    nodo2 = NodoArbol("INSTRUCCIONES")
+                    nodo1.addNodo(nodo2)
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(ast.getInstrucciones()[contador_nodos-1].getNodo()) 
+                    nodo1.addNodo(nodo3)
+                    nodo1 = nodo2
+                else:
+                    nodo3 = NodoArbol("INSTRUCCION")
+                    nodo3.addNodo(ast.getInstrucciones()[contador_nodos-1].getNodo()) 
+                    nodo1.addNodo(nodo3)
+
+                contador +=1
+                contador_nodos -=1
+        
+  
+    global RAIZ
+    RAIZ = init
+    
     return ast
+
+
+
+def getDot():
+    grafo = ""
+    grafo += "digraph {\n"
+    grafo += "n0[label=\"" + RAIZ.getValor().replace("\"", "\\\"") + "\"];\n"
+    global contador 
+    contador = 1
+    grafo += recorrerAST("n0", RAIZ)
+    grafo += "}"
+    return grafo
+
+def recorrerAST(padre, nPadre):
+    global contador
+    grafo = ""
+    for hijo in nPadre.getLeafs():
+        nombreHijo = "n" + str(contador)
+
+        grafo += nombreHijo + "[label=\"" + hijo.getValor().replace("\"", "\\\"") + "\"];\n"
+        grafo += padre + "->" + nombreHijo + ";\n"
+        contador += 1
+        grafo += recorrerAST(nombreHijo, hijo)
+    return grafo
 
 def getdotTablaSimbolos(ast):
     tabla = "digraph{ \n"
@@ -819,9 +857,8 @@ def getdotTablaSimbolos(ast):
         tabla += m
     tabla += "</TABLE>>] \n }"
 
-    print(tabla)
+    #print(tabla)
     return tabla
-
 
 def generardotErrores():
     tabla = "digraph{ \n"
@@ -843,6 +880,6 @@ def generardotErrores():
         tabla += m
 
     tabla += "</TABLE>>] \n }"
-    print(tabla)
+    #print(tabla)
     return tabla
 

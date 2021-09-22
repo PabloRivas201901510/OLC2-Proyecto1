@@ -15,6 +15,8 @@ class Parametros(instruccion):
         return self
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("PARAMETRO")
+        nodo.addleaf(self.identificador)
+        return nodo
 
     

@@ -18,69 +18,67 @@ class AccesoStructs(instruccion):
         self.tipo_acceso_struct = tipo_acceso_struct
 
     def interpretar(self, tree, table):
+        aux = self.lista_identificadores.copy()
+        variable_struct = aux.pop(0)
+        variable_principal = table.getVariable(variable_struct.identificador)
+        if variable_principal:
+            valor_variable = variable_principal.getValor()
             
-            
-            aux = self.lista_identificadores.copy()
-            variable_struct = aux.pop(0)
-            variable_principal = table.getVariable(variable_struct.identificador)
-            if variable_principal:
-                valor_variable = variable_principal.getValor()
-                
-                if self.tipo_acceso_struct == Tipo_Acesso_Struct.ACCESO:
-                    #CUANDO LOS DOS DEMAS PARAMETROS SON STRUCTS
-                    #i.identificador
-                    for i in aux:
-                        i = i.interpretar(tree, table)
-                        if isinstance(i, Excepcion):return i
-                        verificar = False
+            if self.tipo_acceso_struct == Tipo_Acesso_Struct.ACCESO:
+                #CUANDO LOS DOS DEMAS PARAMETROS SON STRUCTS
+                #i.identificador
+                for i in aux:
+                    i = i.interpretar(tree, table)
+                    if isinstance(i, Excepcion):return i
+                    verificar = False
 
-                        for key, value in valor_variable.valor.items():
-                            #print(key, " == ", i.identificador)
-                            if key == i.identificador:
-                                valor_variable = value
-                                verificar = True
-                                break
+                    for key, value in valor_variable.valor.items():
+                        #print(key, " == ", i.identificador)
+                        if key == i.identificador:
+                            valor_variable = value
+                            verificar = True
+                            break
+
+                if verificar:
+                    print("\n")
+                    return valor_variable
+                else:
+                    tree.updateConsola("Error: Semantico, La variable "+str(i.identificador)+ " no existe, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+                    return Excepcion("Semantico", "La variable "+str(i.identificador)+ " no existe", self.fila, self.columna)
+                
+                #print('DIC ACTUAL ret -> ',valor_variable)
+                
+                
+
+            elif self.tipo_acceso_struct == Tipo_Acesso_Struct.ASIGNAR:
+                
+                for i in aux:
+                    i = i.interpretar(tree, table)
+                    if isinstance(i, Excepcion):return i
+                    verificar = None
+                    for key, value in valor_variable.valor.items():
+                        if key == i.identificador:
+                            Data = valor_variable
+                            valor_variable = value
+                            key_id = i.identificador
+                            verificar = True
 
                     if verificar:
-                        print("\n")
-                        return valor_variable
+                        pass
                     else:
                         tree.updateConsola("Error: Semantico, La variable "+str(i.identificador)+ " no existe, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
                         return Excepcion("Semantico", "La variable "+str(i.identificador)+ " no existe", self.fila, self.columna)
-                   
-                    #print('DIC ACTUAL ret -> ',valor_variable)
-                    
-                    
+                
+                expresion = self.expresion
+                #print('2 EXPRESION ACTUAL -> ', expresion)    
+                Data.valor[key_id]= expresion.interpretar(tree, table)
+                return 
+                
+        else:
+            tree.updateConsola("Error: Semantico, La variable no existe, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
+            return Excepcion("Semantico", "La variable no existe", self.fila, self.columna)
 
-                elif self.tipo_acceso_struct == Tipo_Acesso_Struct.ASIGNAR:
-                    
-                    for i in aux:
-                        i = i.interpretar(tree, table)
-                        if isinstance(i, Excepcion):return i
-                        verificar = None
-                        for key, value in valor_variable.valor.items():
-                            if key == i.identificador:
-                                Data = valor_variable
-                                valor_variable = value
-                                key_id = i.identificador
-                                verificar = True
-
-                        if verificar:
-                            pass
-                        else:
-                            tree.updateConsola("Error: Semantico, La variable "+str(i.identificador)+ " no existe, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                            return Excepcion("Semantico", "La variable "+str(i.identificador)+ " no existe", self.fila, self.columna)
-                    
-                    expresion = self.expresion
-                   #print('2 EXPRESION ACTUAL -> ', expresion)    
-                    Data.valor[key_id]= expresion.interpretar(tree, table)
-                    return 
-                    
-            else:
-                tree.updateConsola("Error: Semantico, La variable no existe, Fila:"+str(self.fila)+" columna:"+str(self.columna)+"\n")
-                return Excepcion("Semantico", "La variable no existe", self.fila, self.columna)
-
-            return Primitivo(Tipo(tipos.ENTERO), 0, 0, 0)
+        return Primitivo(Tipo(tipos.ENTERO), 0, 0, 0)
     
 
         
@@ -88,7 +86,56 @@ class AccesoStructs(instruccion):
             
 
     def getNodo(self):
-        pass
+
+        if self.tipo_acceso_struct == Tipo_Acesso_Struct.ACCESO:
+            nodo = NodoArbol("ACCESO_STRUCT")
+
+            n1 = NodoArbol("PARAMETROS")
+            nodo.addNodo(n1)
+            contador1 = 0
+            contador1_ns = len(self.lista_identificadores)
+            for k in self.lista_identificadores:
+                if len(self.lista_identificadores) == 1:
+                    n1.addNodo(k.getNodo())
+                else:
+                    if contador1 != len(self.lista_identificadores) -1 :
+                        n2 = NodoArbol("PARAMETROS")
+                        n1.addNodo(n2)
+                        n1.addNodo(self.lista_identificadores[contador1_ns-1].getNodo()) 
+                        n1.addleaf(".")
+                        n1 = n2
+                    else:
+                        n1.addNodo(self.lista_identificadores[contador1_ns-1].getNodo()) 
+
+                    contador1 +=1
+                    contador1_ns -=1
+        elif self.tipo_acceso_struct == Tipo_Acesso_Struct.ASIGNAR:
+            nodo = NodoArbol("ASIGNAR_STRUCT")
+            n1 = NodoArbol("PARAMETROS")
+            nodo.addNodo(n1)
+            contador1 = 0
+            contador1_ns = len(self.lista_identificadores)
+            for k in self.lista_identificadores:
+                if len(self.lista_identificadores) == 1:
+                    n1.addNodo(k.getNodo())
+                else:
+                    if contador1 != len(self.lista_identificadores) -1 :
+                        n2 = NodoArbol("PARAMETROS")
+                        n1.addNodo(n2)
+                        n1.addleaf(".")
+                        n1.addNodo(self.lista_identificadores[contador1_ns-1].getNodo()) 
+                        n1 = n2
+                    else:
+                        n1.addNodo(self.lista_identificadores[contador1_ns-1].getNodo()) 
+
+                    contador1 +=1
+                    contador1_ns -=1
+
+            nodo.addleaf("=")
+            nodo.addNodo(self.expresion.getNodo())
+            nodo.addleaf(";")
+
+        return nodo
 
 class Tipo_Acesso_Struct(Enum):
     ACCESO = 1

@@ -40,17 +40,46 @@ class println(instruccion):
             tree.updateConsola("\n")
 
     def getNodo(self):
-        nodo = NodoArbol("PRINT")
+        if self.tipo == Tipo_Print.LINEA:
+            n = "PRINT"
+        else:
+            n = "PRINTLN"
+        nodo = NodoArbol(n)
         nodo.addleaf("(")
-        nodo.addNodo(self.expresion.getNodo())
+        nodo1 = NodoArbol("EXPRESIONES")
+        nodo.addNodo(nodo1)
+        contador = 0
+        contador_nodos = len(self.expresion)
+        for i in self.expresion:
+            if len(self.expresion) == 1:
+                nodo3 = NodoArbol("EXPRESION")
+                nodo3.addNodo(i.getNodo()) 
+                nodo1.addNodo(nodo3)
+            else:
+                if contador != len(self.expresion) -1 :
+                    nodo2 = NodoArbol("EXPRESIONES")
+                    nodo1.addNodo(nodo2)
+                    nodo1.addleaf(',')
+                    nodo3 = NodoArbol("EXPRESION")
+                    nodo3.addNodo(self.expresion[contador_nodos-1].getNodo()) 
+                    nodo1.addNodo(nodo3)
+                    
+                    nodo1 = nodo2
+                else:
+                    nodo3 = NodoArbol("EXPRESION")
+                    nodo3.addNodo(self.expresion[contador_nodos-1].getNodo()) 
+                    nodo1.addNodo(nodo3)
+
+                contador +=1
+                contador_nodos -=1
+        
         nodo.addleaf(")")
         return nodo
 
 
+
+
     def Desgloce_Arreglos(self, vector, tree, table):
-        #import pdb
-        #pdb.set_trace()
-        #print('LLEGA-> ', vector )
         res = "["
         for i in vector:
             if(i == "[" or i == "]"):

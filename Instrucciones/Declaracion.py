@@ -44,4 +44,38 @@ class Declaracion(instruccion):
         
 
     def getNodo(self):
-        pass
+        nodo = NodoArbol("DECLARACION")
+        if self.esglobal:
+            nodo.addleaf("global")
+
+        nodo1 = NodoArbol("IDENTIFICADOR")
+        nodo1.addleaf(self.identificador)
+        nodo.addNodo(nodo1)
+        nodo.addleaf("=")
+        nodo.addNodo(self.expresion.getNodo())
+
+        if self.tipo.getTipos() != tipos.NINGUNA:
+            nodo.addleaf("::")
+            nodo2 = NodoArbol("TIPO")
+            nodo2.addleaf(self.getTipoStr(self.tipo.getTipos()))
+            nodo.addNodo(nodo2)
+
+        nodo.addleaf(";")
+        return nodo
+
+    def getTipoStr(self, tipo):
+        if tipo == tipos.ENTERO:
+            return "Int64"
+        elif tipo == tipos.DECIMAL:
+            return "Float64"
+        elif tipo == tipos.CADENA:
+            return "String"
+        elif tipo == tipos.CARACTER:
+            return "Char"
+        elif tipo == tipos.BOOLEANO:
+            return "Boolean"
+        elif tipo == tipos.STRUCT:
+            return "Struct"
+        else:
+            return "IDENTIFICADOR"
+        
