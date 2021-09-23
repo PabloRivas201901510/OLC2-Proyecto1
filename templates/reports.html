@@ -9,19 +9,19 @@
     </div>
 </div> 
 <br>
-
-<form action="/reports/symbol-report" method="GET">
-   <button type="submit" class="btn btn-primary">Tabla de Simbolos</button> 
-</form>
-
-<form action="/reports/error-report" method="GET">
-    <button type="submit" class="btn btn-primary">Tabla de Errores</button> 
-</form>
-
-<form action="/reports/tree-report" method="GET">
-    <button type="submit" class="btn btn-primary">AST</button> 
- </form>
-
+<div style="position: relative; margin: auto; width: 80%;">
+    <form action="/reports/symbol-report" method="GET">
+    <button type="submit" class="btn btn-primary">Tabla de Simbolos</button> 
+    </form>
+    <br>
+    <form action="/reports/error-report" method="GET">
+        <button type="submit" class="btn btn-primary">Tabla de Errores</button> 
+    </form>
+    <br>
+    <form action="/reports/tree-report" method="GET">
+        <button type="submit" class="btn btn-primary">Arbol de Analisis Sintactico</button> 
+    </form>
+</div>
 
 {% endblock %}
 

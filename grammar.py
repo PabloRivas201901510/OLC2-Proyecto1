@@ -142,7 +142,7 @@ def t_COMENTARIO_SIMPLE(t):
     t.lexer.lineno += 1
 
 # Caracteres ignorados
-t_ignore = " \t"
+t_ignore = " \t\r"
 
 def t_newline(t):
     r'\n+'
@@ -279,7 +279,10 @@ def p_expresion_lista1(t):
 #--------------------- DECLARACIONES Y ASIGNACIONES -----------------
 def p_instrucciones_DECLARACION_GLOBAL(t):
     'ins_asignacion : RGLOBAL ID IGUAL expresion PTCOMA'
-    t[0] = Declaracion(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[2], t[4])
+    t[0] = Declaracion(Tipo(tipos.NINGUNA), t.lineno(1), find_column(input, t.slice[1]), t[2], t[4], True)
+
+def p_instrucciones_DECLARACION_GLOBAL_SIN(t):
+    'ins_asignacion : RGLOBAL ID PTCOMA'
 
 def p_instrucciones_DECLARACION(t):
     'ins_asignacion : ID IGUAL expresion PTCOMA'
@@ -653,6 +656,11 @@ def p_expresion_nativas_lowercase(t):
     ''' expresion   : LOWERCASE PARIZQ expresion PARDER'''
     t[0] = Nativas(t.lineno(1), find_column(input, t.slice[1]), t[3], None, tipos_nativas.LOWERCASE)
 
+def p_expresion_FUNCION_NATIVA_trunc(t):
+    ''' expresion   :  RTRUNC PARIZQ expresion PARDER'''
+    t[0] = FuncionNativa(t.lineno(1), find_column(input, t.slice[1]), Tipo(tipos.ENTERO) , t[3], tipos_funcionnativa.TRUNC)
+   
+
 def p_expresion_FUNCION_NATIVA(t):
     ''' expresion   : RPARSE PARIZQ tipodatos COMA expresion PARDER
                     | RTRUNC PARIZQ tipodatos COMA expresion PARDER
@@ -746,11 +754,13 @@ def parse(inp):
     global lexer
     global parser
     global input
+    errores = []
     input = inp
     ast = Arbol(parser.parse(input))
     tabla = TablaSimbolos()
     ast.setTablaSimbolos(tabla)
     ast.setGlobal(tabla)
+    
 
     if ast.getInstrucciones():
         for i in ast.getInstrucciones():
@@ -792,7 +802,7 @@ def parse(inp):
   
     global RAIZ
     RAIZ = init
-    
+    lexer.lineno = 0
     return ast
 
 
